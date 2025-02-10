@@ -1,48 +1,91 @@
-# Astro Starter Kit: Basics
+# 🌟 **Aljawas - Gestión de Reservas**  
 
-```sh
-npm create astro@latest -- --template basics
+🚀 Aplicación web para gestionar reservas de manera sencilla.  
+
+📍 **URL en producción:** [aljawas-a3504.web.app](https://aljawas-a3504.web.app)  
+
+## 🛠 **Requisitos previos**  
+Antes de empezar, asegúrate de tener instalado:  
+- [Node.js](https://nodejs.org/) (recomendado v18+)  
+- [npm](https://www.npmjs.com/) o [pnpm](https://pnpm.io/) (opcional)  
+
+## 🚀 **Cómo arrancar el proyecto**  
+
+1️⃣ **Clona el repositorio:**  
+```bash
+git clone https://github.com/tu-usuario/aljawas.git
+cd aljawas
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
+2️⃣ **Instala las dependencias:**  
+```bash
+npm install
+```
+(O usa `pnpm install` si prefieres pnpm)  
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+3️⃣ **Configura Firebase:**  
+El archivo `firebase.ts` contiene la configuración de Firebase. **Para mayor seguridad, no lo subas al repositorio** (`.gitignore`).  
 
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
+Ejemplo de `firebase.ts`:  
+```ts
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
-## 🚀 Project Structure
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_AUTH_DOMAIN",
+  projectId: "TU_PROJECT_ID",
+  storageBucket: "TU_STORAGE_BUCKET",
+  messagingSenderId: "TU_MESSAGING_SENDER_ID",
+  appId: "TU_APP_ID",
+};
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+4️⃣ **Inicia el servidor de desarrollo:**  
+```bash
+npm run dev
+```
+La aplicación estará disponible en `http://localhost:4321/` (o el puerto que use Astro).  
 
-## 🧞 Commands
+## 📂 **Estructura del proyecto**  
+```
+/src
+ ├── components/     # Componentes reutilizables
+ ├── pages/          # Páginas principales de la app
+ ├── styles/         # Archivos de estilos
+ ├── firebase.ts     # Configuración de Firebase (ignorar en Git)
+ ├── app.tsx         # Entrada principal de la aplicación
+```
 
-All commands are run from the root of the project, from a terminal:
+## 🌍 **Despliegue en Firebase Hosting**  
+Si quieres desplegar la app en Firebase Hosting, sigue estos pasos:  
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+1. Inicia sesión en Firebase CLI:  
+   ```bash
+   firebase login
+   ```
+2. Configura el proyecto (si no está configurado aún):  
+   ```bash
+   firebase init hosting
+   ```
+3. Genera los archivos de producción:  
+   ```bash
+   npm run build
+   ```
+4. Despliega la aplicación:  
+   ```bash
+   firebase deploy
+   ```
 
-## 👀 Want to learn more?
+## 🛠 **Extras y mejoras**  
+- ✅ Soporte para dispositivos móviles  
+- ✅ Uso de Bootstrap para un diseño limpio y responsive  
+- ✅ Integración con Firebase Firestore  
+- ✅ Configuración de constantes globales en Firestore (`constants` collection)  
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+---
+
+⚡ **Desarrollado con Astro + Firebase** | 🚀 _Happy coding!_
