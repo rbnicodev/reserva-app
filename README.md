@@ -13,8 +13,8 @@ Antes de empezar, asegúrate de tener instalado:
 
 1️⃣ **Clona el repositorio:**  
 ```bash
-git clone https://github.com/tu-usuario/aljawas.git
-cd aljawas
+git clone https://https://github.com/rbnicodev/reserva-app
+cd reserva-app
 ```
 
 2️⃣ **Instala las dependencias:**  
@@ -53,11 +53,12 @@ La aplicación estará disponible en `http://localhost:4321/` (o el puerto que u
 ## 📂 **Estructura del proyecto**  
 ```
 /src
+ ├── assets/         # Assets de la aplicación
  ├── components/     # Componentes reutilizables
+ ├── layouts/        # Layouts de la aplicación
  ├── pages/          # Páginas principales de la app
  ├── styles/         # Archivos de estilos
  ├── firebase.ts     # Configuración de Firebase (ignorar en Git)
- ├── app.tsx         # Entrada principal de la aplicación
 ```
 
 ## 🌍 **Despliegue en Firebase Hosting**  
