@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { db } from "../firebase";
 import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where } from "firebase/firestore";
+import { allShifts, restReservations } from "../utils/firebaseUtils";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Obtener `userId` y `reservationId` de la URL
   const searchParams = new URLSearchParams(location.search);
   const userId = searchParams.get("userId");
   const reservationId = searchParams.get("reservationId");
@@ -22,54 +22,105 @@ export default function ReservationForm() {
   const [availableShifts, setAvailableShifts] = useState([]);
   const [currentShiftName, setCurrentShiftName] = useState("");
 
+  // Estado para controlar el cuadro de diálogo
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isEdit, setIsEdit] = useState(false);
+  const [originalGuests, setOriginalGuests] = useState(0);
+
   useEffect(() => {
     if (!userId) return;
 
     const fetchData = async () => {
-        
-      // Obtener turnos reservados por el usuario
-      const reservationsQuery = query(collection(db, "reservations"), where("userId", "==", userId));
-      const reservationsSnapshot = await getDocs(reservationsQuery);
-      const reservedShifts = new Set(reservationsSnapshot.docs.map((doc) => doc.data().shiftId));
+      try {
+        const reservationsQuery = query(collection(db, "reservations"), where("userId", "==", userId));
+        const reservationsSnapshot = await getDocs(reservationsQuery);
+        const reservedShifts = new Set(reservationsSnapshot.docs.map((doc) => doc.data().shiftId));
 
-      // Obtener todos los turnos disponibles
-      const shiftsSnapshot = await getDocs(collection(db, "shifts"));
-      const allShifts = shiftsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        name: doc.data().name,
-        order: doc.data().order ?? 9999, // Si no tiene 'order', ponerlo al final
-      }));
+        const shiftsSnapshot = await getDocs(collection(db, "shifts"));
+        const allShifts = await Promise.all(
+          shiftsSnapshot.docs.map(async (doc) => {
+            const shiftId = doc.id;
+            let remainingSeats = (await restReservations(shiftId)) ?? 0; // Manejo de error
+            if (reservationId) remainingSeats += reservation.guests + 1;
+            return {
+              id: shiftId,
+              name: doc.data().name,
+              order: doc.data().order ?? 9999,
+              remainingSeats,
+            };
+          })
+        );
 
-      // Si estamos editando, buscamos el nombre del turno actual
-      if (reservationId) {
-        const docRef = doc(db, "reservations", reservationId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setReservation(docSnap.data());
-          const shift = allShifts.find((s) => s.id === docSnap.data().shiftId);
-          if (shift) {
-            setCurrentShiftName(shift.name);
+        if (reservationId) {
+          setIsEdit(true);
+          const docRef = doc(db, "reservations", reservationId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const reservationData = docSnap.data();
+            setReservation(reservationData);
+            setOriginalGuests(reservationData.guests || 0);
+
+            const shift = allShifts.find((s) => s.id === reservationData.shiftId);
+            if (shift) {
+              setCurrentShiftName(shift.name);
+            }
+
+            // 🔥 Asegurar que shiftId no sea vacío
+            if (!reservationData.shiftId && shift) {
+              setReservation((prev) => ({ ...prev, shiftId: shift.id }));
+            }
           }
         }
-      }
 
-      // Filtrar y ordenar los turnos disponibles solo para nueva reserva
-      setAvailableShifts(allShifts.filter((shift) => !reservedShifts.has(shift.id)).sort((a, b) => a.order - b.order));
+        setAvailableShifts(allShifts.filter((shift) => !reservedShifts.has(shift.id)).sort((a, b) => a.order - b.order));
+      } catch (error) {
+        console.error("Error al obtener los datos:", error);
+      }
     };
 
     fetchData();
   }, [userId, reservationId]);
 
   const saveReservation = async () => {
-    if (!userId) return alert("Error: No se encontró el usuario.");
-    if (!reservation.shiftId) return alert("Por favor, selecciona un turno.");
-
-    if (reservationId) {
-      await setDoc(doc(db, "reservations", reservationId), reservation);
-    } else {
-      await addDoc(collection(db, "reservations"), reservation);
+    if (!userId) {
+      console.error("Sin userId");
+      return;
     }
-    navigate(`/reservations?userId=${userId}`);
+    if (!reservation.shiftId) {
+      console.error("Sin shiftId");
+      return;
+    }
+
+    const shifts = await allShifts();
+    const selectedShift = shifts?.find((shift) => shift.id === reservation.shiftId);
+    if (!selectedShift) {
+      console.error("Sin shift seleccionado");
+      return;
+    };
+
+    let remainingSeats = await restReservations(reservation.shiftId);
+    if (isEdit) remainingSeats += ((originalGuests || 0) + 1);
+
+    const totalPeople = reservation.guests + 1; // Incluye al usuario
+    if (totalPeople > remainingSeats) {
+      setErrorMessage("No hay suficientes plazas disponibles para esta reserva. Quedan " + remainingSeats + " plazas");
+      setErrorDialogOpen(true);
+      return;
+    }
+
+    try {
+      if (reservationId) {
+        await setDoc(doc(db, "reservations", reservationId), reservation);
+      } else {
+        await addDoc(collection(db, "reservations"), reservation);
+      }
+      navigate(`/reservations?userId=${userId}`);
+    } catch (error) {
+      console.error("Error al guardar la reserva:", error);
+      setErrorMessage("Hubo un error al guardar la reserva. Inténtalo de nuevo.");
+      setErrorDialogOpen(true);
+    }
   };
 
   return (
@@ -84,35 +135,57 @@ export default function ReservationForm() {
       <h1 className="text-center mb-4">{reservationId ? "Editar Reserva" : "Nueva Reserva"}</h1>
 
       <div className="mb-3">
-        <label className="form-label">Invitados</label>
+        <label className="form-label"><strong>Invitados</strong></label>
         <input
           type="number"
           className="form-control"
-          value={reservation.guests}
-          onChange={(e) => setReservation({ ...reservation, guests: Number(e.target.value) })}
+          value={reservation.guests === null ? "" : reservation.guests} // Permite temporalmente vacío
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "" || isNaN(value)) {
+              setReservation({ ...reservation, guests: null }); // Permitir vacío temporalmente
+            } else {
+              setReservation({ ...reservation, guests: Number(value) });
+            }
+          }}
+          onBlur={(e) => {
+            const value = Number(e.target.value);
+            setReservation({ ...reservation, guests: isNaN(value) || value < 0 ? 0 : value });
+          }}
         />
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Niños</label>
+        <label className="form-label"><strong>Niños</strong></label>
         <input
           type="number"
           className="form-control"
-          value={reservation.kids}
-          onChange={(e) => setReservation({ ...reservation, kids: Number(e.target.value) })}
+          value={reservation.kids === null ? "" : reservation.kids}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "" || isNaN(value)) {
+              setReservation({ ...reservation, kids: null });
+            } else {
+              setReservation({ ...reservation, kids: Number(value) });
+            }
+          }}
+          onBlur={(e) => {
+            const value = Number(e.target.value);
+            setReservation({ ...reservation, kids: isNaN(value) || value < 0 ? 0 : value });
+          }}
         />
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Turno</label>
+        <label className="form-label"><strong>Turno</strong></label>
         {reservationId ? (
           <p className="form-control-plaintext">{currentShiftName || "Turno no encontrado"}</p>
         ) : (
           <select className="form-select" value={reservation.shiftId} onChange={(e) => setReservation({ ...reservation, shiftId: e.target.value })}>
             <option value="">Selecciona un turno</option>
             {availableShifts.map((shift) => (
-              <option key={shift.id} value={shift.id}>
-                {shift.name}
+              <option key={shift.id} value={shift.id} disabled={shift.remainingSeats <= 0}>
+                {shift.name} {shift.remainingSeats <= 0 ? "(Sin plazas)" : ""}
               </option>
             ))}
           </select>
@@ -122,6 +195,28 @@ export default function ReservationForm() {
       <button className="btn btn-primary w-100" onClick={saveReservation}>
         Guardar
       </button>
+
+      {/* Modal de error */}
+      {errorDialogOpen && (
+        <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)" }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Error</h5>
+                <button type="button" className="btn-close" onClick={() => setErrorDialogOpen(false)}></button>
+              </div>
+              <div className="modal-body">
+                <p>{errorMessage}</p>
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setErrorDialogOpen(false)}>
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
