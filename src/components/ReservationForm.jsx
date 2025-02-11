@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { db } from "../firebase";
 import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where } from "firebase/firestore";
-import { allShifts, restReservations } from "../utils/firebaseUtils";
+import { allMenus, allShifts, restReservations } from "../utils/firebaseUtils";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
@@ -27,12 +27,16 @@ export default function ReservationForm() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isEdit, setIsEdit] = useState(false);
   const [originalGuests, setOriginalGuests] = useState(0);
+  const [menus, setMenus] = useState([]);
+  const [menu, setMenu] = useState({});
 
   useEffect(() => {
     if (!userId) return;
 
     const fetchData = async () => {
       try {
+        const tempMenus = await allMenus();
+        setMenus(tempMenus);
         const reservationsQuery = query(collection(db, "reservations"), where("userId", "==", userId));
         const reservationsSnapshot = await getDocs(reservationsQuery);
         const reservedShifts = new Set(reservationsSnapshot.docs.map((doc) => doc.data().shiftId));
@@ -59,6 +63,8 @@ export default function ReservationForm() {
           if (docSnap.exists()) {
             const reservationData = docSnap.data();
             setReservation(reservationData);
+            const tempMenu = tempMenus?.find(m => m.shiftId === reservationData.shiftId);
+            setMenu(tempMenu);
             setOriginalGuests(reservationData.guests || 0);
 
             const shift = allShifts.find((s) => s.id === reservationData.shiftId);
@@ -176,12 +182,15 @@ export default function ReservationForm() {
         />
       </div>
 
-      <div className="mb-3">
+      <div className="mb-4">
         <label className="form-label"><strong>Turno</strong></label>
         {reservationId ? (
           <p className="form-control-plaintext">{currentShiftName || "Turno no encontrado"}</p>
         ) : (
-          <select className="form-select" value={reservation.shiftId} onChange={(e) => setReservation({ ...reservation, shiftId: e.target.value })}>
+          <select className="form-select" value={reservation.shiftId} onChange={(e) => {
+            setReservation({ ...reservation, shiftId: e.target.value });
+            setMenu(menus?.find(m => m.shiftId === e.target.value));
+          }}>
             <option value="">Selecciona un turno</option>
             {availableShifts.map((shift) => (
               <option key={shift.id} value={shift.id} disabled={shift.remainingSeats <= 0}>
@@ -191,6 +200,25 @@ export default function ReservationForm() {
           </select>
         )}
       </div>
+
+      {!!menu && !!menu.incomings && !!menu.mainPlate && !!menu.dessert ? (
+        <div>
+          <div className="mb-1">
+            <label className="form-label"><strong>Entrantes</strong></label>
+            <p className="form-control-plaintext">{menu.incomings.join(", ")}</p>
+          </div>
+
+          <div className="mb-1">
+            <label className="form-label"><strong>Plato principal</strong></label>
+            <p className="form-control-plaintext">{menu.mainPlate}</p>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label"><strong>Postre</strong></label>
+            <p className="form-control-plaintext">{menu.dessert}</p>
+          </div>
+        </div>
+      ) : (<div></div>)}
 
       <button className="btn btn-primary w-100" onClick={saveReservation}>
         Guardar
