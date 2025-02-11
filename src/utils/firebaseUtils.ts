@@ -2,6 +2,7 @@ import { collection, doc, getDoc, getDocs, query, where } from "firebase/firesto
 import { db } from "../firebase";
 import type { GlobalSettings } from "../models/GlobalSettings";
 import type { Shift } from "../models/Shift";
+import type { Menu } from "../models/Menu";
 
 // Función para obtener las configuraciones globales desde Firestore
 export const fetchGlobalSettings = async (): Promise<GlobalSettings | null> => {
@@ -35,6 +36,17 @@ export const allShifts = async (): Promise<Shift[] | null> => {
 
   return (snapShot.docs.map(doc => {
     const result: Shift = {id: doc.id};
+    return {...result, ...doc.data()};
+  }));
+}
+
+export const allMenus = async (): Promise<Menu[] | null> => {
+  const menuRef = collection(db, "menus");
+  const menuQuery = query(menuRef);
+  const snapShot = await getDocs(menuQuery);
+
+  return (snapShot.docs.map(doc => {
+    const result: Menu = {id: doc.id};
     return {...result, ...doc.data()};
   }));
 }
