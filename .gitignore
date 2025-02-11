@@ -27,5 +27,6 @@ pnpm-debug.log*
 .vscode/
 
 .firebase/
+.src/firebase.ts
 
 src/firebase.ts
