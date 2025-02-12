@@ -12,12 +12,7 @@ export default function ReservationForm() {
   const userId = searchParams.get("userId");
   const reservationId = searchParams.get("reservationId");
 
-  const [reservation, setReservation] = useState({
-    guests: 0,
-    kids: 0,
-    shiftId: "",
-    userId: userId || "",
-  });
+  const [reservation, setReservation] = useState({});
 
   const [availableShifts, setAvailableShifts] = useState([]);
   const [currentShiftName, setCurrentShiftName] = useState("");
@@ -46,7 +41,7 @@ export default function ReservationForm() {
           shiftsSnapshot.docs.map(async (doc) => {
             const shiftId = doc.id;
             let remainingSeats = (await restReservations(shiftId)) ?? 0; // Manejo de error
-            if (reservationId) remainingSeats += reservation.guests + 1;
+            if (reservationId) remainingSeats += reservation.guests;
             return {
               id: shiftId,
               name: doc.data().name,
@@ -77,6 +72,13 @@ export default function ReservationForm() {
               setReservation((prev) => ({ ...prev, shiftId: shift.id }));
             }
           }
+        } else {
+          setReservation({
+            guests: 1,
+            kids: 0,
+            shiftId: "",
+            userId: userId || "",
+          });
         }
 
         setAvailableShifts(allShifts.filter((shift) => !reservedShifts.has(shift.id)).sort((a, b) => a.order - b.order));
@@ -95,6 +97,8 @@ export default function ReservationForm() {
     }
     if (!reservation.shiftId) {
       console.error("Sin shiftId");
+      setErrorMessage("Debe indicarse un turno");
+      setErrorDialogOpen(true);
       return;
     }
 
@@ -106,10 +110,16 @@ export default function ReservationForm() {
     };
 
     let remainingSeats = await restReservations(reservation.shiftId);
-    if (isEdit) remainingSeats += ((originalGuests || 0) + 1);
+    if (isEdit) remainingSeats += (originalGuests || 0);
 
-    const totalPeople = reservation.guests + 1; // Incluye al usuario
-    if (totalPeople > remainingSeats) {
+    const totalPeople = reservation.guests;
+
+    if (isNaN(reservation.guests) || reservation.guests < 1) {
+      setErrorMessage("Debe indicarse al menos una persona");
+      setErrorDialogOpen(true);
+      return;
+    }
+    if (reservation.guests > remainingSeats) {
       setErrorMessage("No hay suficientes plazas disponibles para esta reserva. Quedan " + remainingSeats + " plazas");
       setErrorDialogOpen(true);
       return;
@@ -140,89 +150,97 @@ export default function ReservationForm() {
 
       <h1 className="text-center mb-4">{reservationId ? "Editar Reserva" : "Nueva Reserva"}</h1>
 
-      <div className="mb-3">
-        <label className="form-label"><strong>Invitados</strong></label>
-        <input
-          type="number"
-          className="form-control"
-          value={reservation.guests === null ? "" : reservation.guests} // Permite temporalmente vacío
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === "" || isNaN(value)) {
-              setReservation({ ...reservation, guests: null }); // Permitir vacío temporalmente
-            } else {
-              setReservation({ ...reservation, guests: Number(value) });
-            }
-          }}
-          onBlur={(e) => {
-            const value = Number(e.target.value);
-            setReservation({ ...reservation, guests: isNaN(value) || value < 0 ? 0 : value });
-          }}
-        />
-      </div>
-
-      <div className="mb-3">
-        <label className="form-label"><strong>Niños</strong></label>
-        <input
-          type="number"
-          className="form-control"
-          value={reservation.kids === null ? "" : reservation.kids}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === "" || isNaN(value)) {
-              setReservation({ ...reservation, kids: null });
-            } else {
-              setReservation({ ...reservation, kids: Number(value) });
-            }
-          }}
-          onBlur={(e) => {
-            const value = Number(e.target.value);
-            setReservation({ ...reservation, kids: isNaN(value) || value < 0 ? 0 : value });
-          }}
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="form-label"><strong>Turno</strong></label>
-        {reservationId ? (
-          <p className="form-control-plaintext">{currentShiftName || "Turno no encontrado"}</p>
-        ) : (
-          <select className="form-select" value={reservation.shiftId} onChange={(e) => {
-            setReservation({ ...reservation, shiftId: e.target.value });
-            setMenu(menus?.find(m => m.shiftId === e.target.value));
-          }}>
-            <option value="">Selecciona un turno</option>
-            {availableShifts.map((shift) => (
-              <option key={shift.id} value={shift.id} disabled={shift.remainingSeats <= 0}>
-                {shift.name} {shift.remainingSeats <= 0 ? "(Sin plazas)" : ""}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
-
-      {!!menu && !!menu.incomings && !!menu.mainPlate && !!menu.dessert ? (
+      {!!reservation && reservation.userId ?
         <div>
-          <div className="mb-1">
-            <label className="form-label"><strong>Entrantes</strong></label>
-            <p className="form-control-plaintext">{menu.incomings.join(", ")}</p>
-          </div>
-
-          <div className="mb-1">
-            <label className="form-label"><strong>Plato principal</strong></label>
-            <p className="form-control-plaintext">{menu.mainPlate}</p>
+          <div className="mb-3">
+            <label className="form-label"><strong>Adultos</strong></label>
+            <input
+              type="number"
+              className="form-control"
+              value={reservation.guests === null ? "" : reservation.guests} // Permite temporalmente vacío
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "" || isNaN(value)) {
+                  setReservation({ ...reservation, guests: null }); // Permitir vacío temporalmente
+                } else {
+                  setReservation({ ...reservation, guests: Number(value) });
+                }
+              }}
+              onBlur={(e) => {
+                const value = Number(e.target.value);
+                setReservation({ ...reservation, guests: isNaN(value) || value < 1 ? 1 : value });
+              }}
+            />
           </div>
 
           <div className="mb-3">
-            <label className="form-label"><strong>Postre</strong></label>
-            <p className="form-control-plaintext">{menu.dessert}</p>
+            <label className="form-label"><strong>Niños</strong></label>
+            <input
+              type="number"
+              className="form-control"
+              value={reservation.kids === null ? "" : reservation.kids}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "" || isNaN(value)) {
+                  setReservation({ ...reservation, kids: null });
+                } else {
+                  setReservation({ ...reservation, kids: Number(value) });
+                }
+              }}
+              onBlur={(e) => {
+                const value = Number(e.target.value);
+                setReservation({ ...reservation, kids: isNaN(value) || value < 0 ? 0 : value });
+              }}
+            />
           </div>
-        </div>
-      ) : (<div></div>)}
 
-      <button className="btn btn-primary w-100" onClick={saveReservation}>
-        Guardar
-      </button>
+          <div className="mb-4">
+            <label className="form-label"><strong>Turno</strong></label>
+            {reservationId ? (
+              <p className="form-control-plaintext">{currentShiftName || "Turno no encontrado"}</p>
+            ) : (
+              <select className="form-select" value={reservation.shiftId} onChange={(e) => {
+                setReservation({ ...reservation, shiftId: e.target.value });
+                setMenu(menus?.find(m => m.shiftId === e.target.value));
+              }}>
+                <option value="">Selecciona un turno</option>
+                {availableShifts.map((shift) => (
+                  <option key={shift.id} value={shift.id} disabled={shift.remainingSeats <= 0}>
+                    {shift.name} {shift.remainingSeats <= 0 ? "(Sin plazas)" : ""}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <button className="btn btn-primary w-100" onClick={saveReservation}>
+            Guardar
+          </button>
+
+          {!!menu && !!menu.incomings && !!menu.mainPlate && !!menu.dessert ? (
+            <div className="card shadow-sm p-3 mt-3" >
+              <div className="card-title text-secondary">
+                <h5><strong>Menú</strong></h5>
+              </div>
+              <div className="mb-1 card-text">
+                <label className="form-label text-secondary mb-1"><strong>Entrantes</strong></label>
+                <p className="form-control-plaintext text-secondary mt-0">{menu.incomings.join(", ")}</p>
+              </div>
+
+              <div className="mb-1 card-text">
+                <label className="form-label text-secondary mb-1"><strong>Plato principal</strong></label>
+                <p className="form-control-plaintext text-secondary mt-0">{menu.mainPlate}</p>
+              </div>
+
+              <div className="mb-1 card-text">
+                <label className="form-label text-secondary mb-1"><strong>Postre</strong></label>
+                <p className="form-control-plaintext text-secondary mt-0">{menu.dessert}</p>
+              </div>
+            </div>
+          ) : (<div></div>)}
+        </div>
+        : <p className="text-secondary text-center">Cargando datos...</p>
+      }
 
       {/* Modal de error */}
       {errorDialogOpen && (

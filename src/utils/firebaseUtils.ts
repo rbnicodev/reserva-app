@@ -58,7 +58,7 @@ export const totalReservations = async (shiftId: string): Promise<number> => {
   
     const snapshot = await getDocs(reservationsQuery);
     const result: number = snapshot.docs.map( doc => doc.data()).reduce( (acc, res) => {
-      acc = acc + res.guests + 1;
+      acc = acc + res.guests;
       return acc;
     }, 0);
 
