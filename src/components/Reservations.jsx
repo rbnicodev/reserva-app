@@ -76,18 +76,18 @@ export default function Reservations() {
       {/* Lista de reservas */}
       <div className="w-100 d-flex flex-column align-items-center">
         {reservations.length === 0 ? (
-          <p className="text-secondary text-center">No hay reservas aún.</p>
+          <p className="text-secondary text-center">No hay reservas todavía.</p>
         ) : (
           <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
             {reservations.map((reservation) => (
               <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
                 <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`/reservations/edit?reservationId=${reservation.id}&userId=${userId}`)}>
                   <h5 className="card-title text-primary">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
-                  <p className="card-text">👥 {reservation.guests} Invitados | 🧒 {reservation.kids} Niños</p>
+                  <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.guests !== 1 ? "s" : ""}</p>
                 </div>
 
                 {/* Botón de eliminar */}
-                <button className="btn btn-outline-danger btn-sm" onClick={() => setConfirmDeleteId(reservation.id)}>
+                <button className="btn btn-sm" onClick={() => setConfirmDeleteId(reservation.id)}>
                   🗑️
                 </button>
               </div>
