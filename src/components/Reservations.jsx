@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { collection, getDocs, query, where, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { allPrices, priceByReservation } from "../utils/firebaseUtils";
 
 export default function Reservations() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function Reservations() {
   const [reservations, setReservations] = useState([]);
   const [shifts, setShifts] = useState({});
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [prices, setPrices] = useState([]);
 
   // Cargar reservas y turnos desde Firebase
   useEffect(() => {
@@ -43,6 +45,10 @@ export default function Reservations() {
         .sort((a, b) => (shiftsData[a.shiftId]?.order ?? 0) - (shiftsData[b.shiftId]?.order ?? 0));
 
       setReservations(sortedReservations);
+      reservations.forEach( async (reservation) => {
+        const price = await priceByReservation(reservation.id);
+        setPrices([...prices, {reservationId: reservation.id, amount: price}])
+      });
     };
 
     fetchData();
@@ -84,6 +90,7 @@ export default function Reservations() {
                 <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`/reservations/edit?reservationId=${reservation.id}&userId=${userId}`)}>
                   <h5 className="card-title text-primary">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
                   <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.guests !== 1 ? "s" : ""}</p>
+                  <p className="card-text text-secondary">{prices.find(p => p.reservationId === reservation.id)}</p>
                 </div>
 
                 {/* Botón de eliminar */}

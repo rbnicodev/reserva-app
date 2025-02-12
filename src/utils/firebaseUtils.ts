@@ -3,6 +3,8 @@ import { db } from "../firebase";
 import type { GlobalSettings } from "../models/GlobalSettings";
 import type { Shift } from "../models/Shift";
 import type { Menu } from "../models/Menu";
+import type { Price } from "../models/Price";
+import type { Reservation } from "../models/Reservation";
 
 // Función para obtener las configuraciones globales desde Firestore
 export const fetchGlobalSettings = async (): Promise<GlobalSettings | null> => {
@@ -72,4 +74,48 @@ export const restReservations = async (shiftId: string): Promise<number> => {
 
     const result = currentReservations <= maxReservations ? maxReservations - currentReservations : 0;
     return result;
+}
+
+export const allPrices = async (): Promise<Price[]> => {
+  const pricesRef = collection(db, "prices");
+  const pricesQuery = query(pricesRef);
+  const prices = (await getDocs(pricesQuery)).docs.map( doc => {
+    return {
+      id: doc.data().id,
+      amount: doc.data().amount
+    }
+  });
+  return prices;
+}
+
+export const priceByReservation = async (reservationId: string): Promise<Number | undefined> => {
+  let docRef = doc(db, "reservations", reservationId);
+  let docSnap = await getDoc(docRef);
+  const reservation: Reservation = {
+    id: docSnap.id,
+    ...docSnap.data()
+  };
+
+  docRef = doc(db, "shifts", (reservation.shiftId as string));
+  docSnap = await getDoc(docRef);
+  const shift: Shift = {
+    id: docSnap.id,
+    ...docSnap.data()
+  };
+
+  const menusRef = collection(db, "menus");
+  const menusQuery = query(menusRef, where("shiftId", "==", shift.id));
+
+  const menu: Menu | undefined = (await getDocs(menusQuery)).docs.map( doc => {
+    return {
+      id: doc.id,
+    ...doc.data()
+    } as Menu
+  }).find( m => m.shiftId === shift.id);
+  
+
+  let pricesRef = doc(db, "prices", menu? menu.priceId as string : "");
+  let pricesSnap = await getDoc(pricesRef);
+
+  return (pricesSnap.data() as Price).amount;
 }
