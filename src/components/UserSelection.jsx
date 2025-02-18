@@ -43,7 +43,7 @@ export default function UserSelection() {
       {/* Botón de acceso a la pantalla de resumen */}
       <button
         className="btn btn-dark w-100 mt-4 py-3"
-        onClick={() => navigate(`/summary`)}
+        onClick={() => navigate(`/user_selection_day`)}
       >
         📊 Ver Resumen de Reservas
       </button>

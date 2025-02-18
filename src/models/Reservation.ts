@@ -1,5 +1,5 @@
 export interface Reservation {
-    id: string;
+    id?: string;
     guests?: number;
     kids?: number;
     shiftId?: string;
