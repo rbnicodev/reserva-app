@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Para redirección
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import ListUsers from "./ListUsers";
+import { Paths } from "../utils/paths";
 
 export default function UserSelection() {
   const [users, setUsers] = useState([]);
@@ -20,26 +22,11 @@ export default function UserSelection() {
   }, []);
 
   return (
-    <div className="container w-100 min-vh-100 d-flex flex-column align-items-center justify-content-center">
+    <div>
       <h1 className="text-center mb-4">Selecciona tu usuario</h1>
-  
-      {users.length === 0 ? (
-        <p className="text-secondary">Cargando usuarios...</p>
-      ) : (
-        <div className="row row-cols-2 row-cols-sm-3 g-3 w-100" style={{ maxWidth: "600px" }}>
-          {users.map(user => (
-            <div className="col" key={user.id}>
-              <button
-                className="btn btn-primary w-100 py-3"
-                onClick={() => navigate(`/reservations?userId=${user.id}`)}
-              >
-                {user.name}
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-  
+
+      {ListUsers(users, Paths.TABLE_RESERVATION)}
+
       {/* Botón de acceso a la pantalla de resumen */}
       <button
         className="btn btn-dark w-100 mt-4 py-3"
@@ -48,5 +35,5 @@ export default function UserSelection() {
         📊 Ver Resumen de Reservas
       </button>
     </div>
-  );  
+  );
 }

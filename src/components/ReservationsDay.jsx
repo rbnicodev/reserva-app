@@ -6,6 +6,7 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es"; // Importa el idioma español
 import { format } from "date-fns";
+import { Paths } from "../utils/paths";
 
 
 export default function ReservationsDay() {
@@ -66,40 +67,40 @@ export default function ReservationsDay() {
 
   const saveReservation = async (date) => {
     if (!date) return;
-  
+
     const formattedDate = format(date, "yyyy-MM-dd"); // Formatea la fecha en texto
-  
+
     try {
       const docRef = await addDoc(collection(db, "reservationsDay"), {
         userId,
         reservationDate: formattedDate,
       });
-  
+
       const docSnap = await getDoc(docRef);
-  
+
       if (docSnap.exists()) {
         setReservations([...reservations, { id: docSnap.id, ...docSnap.data() }]);
       }
     } catch (error) {
       console.error("Error creando la reserva:", error);
     }
-  
+
     setCreateReservation(null);
   };
-  
+
 
 
   return (
-    
-    <div className="container d-flex flex-column align-items-center py-4" style={{ minHeight: "100vh" }}>
+
+    <div>
       {/* Botón de volver */}
-      <button className="btn btn-link position-absolute top-0 start-0 mt-3 ms-3" onClick={() => navigate(`/user_selection_day`)}>
+      <button className="btn btn-link position-absolute start-0 ms-3" onClick={() => navigate(Paths.DAY_USER_SELECTION)}>
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-arrow-left" viewBox="0 0 16 16">
           <path fillRule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5" />
         </svg>
       </button>
 
-      <h1 className="text-center mb-4">Tus Reservas</h1>
+      <h1 className="text-center mb-4">Días reservados</h1>
 
       {/* Lista de reservas */}
       <div className="w-100 d-flex flex-column align-items-center">
@@ -109,17 +110,18 @@ export default function ReservationsDay() {
           <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
             {reservations.map((reservation) => {
 
-              const formattedDate = reservation.reservationDate 
-              ? format(new Date(reservation.reservationDate), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) 
-              : "Fecha desconocida";
-            
+              const formattedDate = reservation.reservationDate
+                ? format(new Date(reservation.reservationDate), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })
+                  .replace(/\b\w/g, (char) => char.toUpperCase()) // Capitaliza la primera letra de cada palabra
+                : "Fecha desconocida";
+
 
               return (
                 <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
-                  <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`/reservationsDay/edit?reservationId=${reservation.id}&userId=${userId}`)}>
-                    <h5 className="card-title text-primary">{formattedDate}</h5>  
+                  <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`${Paths.DAY_USER_SELECTION}?reservationId=${reservation.id}&userId=${userId}`)}>
+                    <h5 className="card-title text-primary">{formattedDate}</h5>
                   </div>
-  
+
                   {/* Botón de eliminar */}
                   <button className="btn btn-sm" onClick={() => setConfirmDeleteId(reservation.id)}>
                     🗑️
@@ -132,7 +134,7 @@ export default function ReservationsDay() {
       </div>
 
       {/* Botón para agregar nueva reserva */}
-      <div className="mt-1">
+      <div className="mt-1 text-center">
         <button className="btn btn-primary rounded-circle shadow" style={{ width: "60px", height: "60px", fontSize: "28px" }} onClick={() => setCreateReservation(true)}>
           +
         </button>

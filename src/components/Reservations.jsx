@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { collection, getDocs, query, where, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { Paths } from "../utils/paths";
 
 export default function Reservations() {
   const navigate = useNavigate();
@@ -63,9 +64,9 @@ export default function Reservations() {
   };
 
   return (
-    <div className="container d-flex flex-column align-items-center py-4" style={{ minHeight: "100vh" }}>
+    <div >
       {/* Botón de volver */}
-      <button className="btn btn-link position-absolute top-0 start-0 mt-3 ms-3" onClick={() => navigate(`/`)}>
+      <button className="btn btn-link position-absolute start-0 ms-3" onClick={() => navigate(Paths.TABLE_USER_SELECTION)}>
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-arrow-left" viewBox="0 0 16 16">
           <path fillRule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5" />
         </svg>
@@ -78,10 +79,10 @@ export default function Reservations() {
         {reservations.length === 0 ? (
           <p className="text-secondary text-center">No hay reservas todavía.</p>
         ) : (
-          <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+          <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
             {reservations.map((reservation) => (
               <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
-                <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`/reservations/edit?reservationId=${reservation.id}&userId=${userId}`)}>
+                <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?reservationId=${reservation.id}&userId=${userId}`)}>
                   <h5 className="card-title text-primary">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
                   <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.guests !== 1 ? "s" : ""}</p>
                 </div>
@@ -97,8 +98,8 @@ export default function Reservations() {
       </div>
 
       {/* Botón para agregar nueva reserva */}
-      <div className="mt-1">
-        <button className="btn btn-primary rounded-circle shadow" style={{ width: "60px", height: "60px", fontSize: "28px" }} onClick={() => navigate(`/reservations/edit?userId=${userId}`)}>
+      <div className="mt-1 text-center">
+        <button className="btn btn-primary rounded-circle shadow" style={{ width: "60px", height: "60px", fontSize: "28px" }} onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?userId=${userId}`)}>
           +
         </button>
       </div>
