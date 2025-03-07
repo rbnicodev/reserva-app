@@ -1,8 +1,6 @@
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaBars } from 'react-icons/fa'; // Icono de FontAwesome
-import UserSelection from "./UserSelection";
-import UserSelectionDay from "./UserSelectionDay";
 import { useNavigate } from "react-router-dom";
 import { Paths } from "../utils/paths";
 
@@ -11,12 +9,12 @@ export default function Layout({ children }) {
     const navigate = useNavigate();
 
     // Función para alternar la visibilidad del sidebar
-    const toggleSidebar = () => {
-        setShow(prevShow => !prevShow); // Usar la función de actualización basada en el valor anterior del estado
-    };
+    const toggleSidebar = () => setShow(!show);
+
+    // Función para cerrar el sidebar al hacer clic fuera de él
+    const handleOverlayClick = () => setShow(false);
 
     return (
-
         <div className="d-flex flex-column vh-100">
             {/* Navbar */}
             <nav className="navbar navbar-dark bg-dark px-3">
@@ -28,6 +26,22 @@ export default function Layout({ children }) {
                     <FaBars />
                 </button>
             </nav>
+
+            {/* Fondo oscuro cuando el sidebar está abierto */}
+            {show && (
+                <div
+                    onClick={handleOverlayClick} // Cerrar el sidebar al hacer clic en el fondo
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: "rgba(0, 0, 0, 0.5)", // Fondo oscuro
+                        zIndex: 1040, // Asegura que el fondo quede debajo del sidebar
+                    }}
+                />
+            )}
 
             {/* Sidebar Offcanvas */}
             <div
@@ -64,7 +78,7 @@ export default function Layout({ children }) {
                         <li className="nav-item">
                             <button className="nav-link" onClick={() => {
                                 setShow(false);
-                                alert("Not implemented...")
+                                alert("Not implemented...");
                                 //navigate(Paths.DAY_USER_SELECTION);
                             }}>Calendario reservas</button>
                         </li>
@@ -89,6 +103,5 @@ export default function Layout({ children }) {
                 {children}
             </main>
         </div>
-
     );
 }
