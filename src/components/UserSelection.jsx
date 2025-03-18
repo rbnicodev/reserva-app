@@ -30,15 +30,7 @@ export default function UserSelection() {
       </button>
       <h1 className="text-center mb-4">Reserva M&C</h1>
 
-      {ListUsers(users, Paths.TABLE_RESERVATION)}
-
-      {/* Botón de acceso a la pantalla de resumen */}
-      <button
-        className="btn btn-dark w-100 mt-4 py-3"
-        onClick={() => navigate(Paths.TABLE_RESERVATIONS_SUMMARY)}
-      >
-        📊 Ver Resumen de Reservas
-      </button>
+        {ListUsers(users, Paths.TABLE_RESERVATION)}
     </div>
   );
 }

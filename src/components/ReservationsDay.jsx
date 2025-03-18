@@ -112,14 +112,15 @@ export default function ReservationsDay() {
 
               const formattedDate = reservation.reservationDate
                 ? format(new Date(reservation.reservationDate), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })
-                  .replace(/\b\w/g, (char) => char.toUpperCase()) // Capitaliza la primera letra de cada palabra
+                .toLowerCase()
+                .replace(/^\w/, (char) => char.toUpperCase())
                 : "Fecha desconocida";
 
 
               return (
                 <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
                   <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`${Paths.DAY_USER_SELECTION}?reservationId=${reservation.id}&userId=${userId}`)}>
-                    <h5 className="card-title text-primary">{formattedDate}</h5>
+                    <h5 className="card-title text-dark">{formattedDate}</h5>
                   </div>
 
                   {/* Botón de eliminar */}
@@ -135,7 +136,7 @@ export default function ReservationsDay() {
 
       {/* Botón para agregar nueva reserva */}
       <div className="mt-1 text-center">
-        <button className="btn btn-primary rounded-circle shadow" style={{ width: "60px", height: "60px", fontSize: "28px" }} onClick={() => setCreateReservation(true)}>
+        <button className="btn btn-dark rounded-circle shadow" style={{ width: "60px", height: "60px", fontSize: "28px" }} onClick={() => setCreateReservation(true)}>
           +
         </button>
       </div>
@@ -189,7 +190,7 @@ export default function ReservationsDay() {
                 <button className="btn btn-secondary" onClick={() => setCreateReservation(null)}>
                   Cancelar
                 </button>
-                <button className="btn btn-primary" onClick={() => saveReservation(selectedDate)}>
+                <button className="btn btn-dark" onClick={() => saveReservation(selectedDate)}>
                   Guardar
                 </button>
               </div>

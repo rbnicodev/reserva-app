@@ -5,7 +5,7 @@ export default function ListUsers(users, url) {
     const navigate = useNavigate();
 
     return (
-        <div>
+        <div style={{height: "75vh", overflowY: "auto", overflowX: "hidden"}}>
             {users.length === 0 ? (
             <p className="text-secondary">Cargando usuarios...</p>
             ) : (

@@ -64,31 +64,31 @@ export default function Layout({ children }) {
                 <div className="offcanvas-body">
                     <ul className="nav flex-column">
                         <li className="nav-item">
-                            <button className="nav-link" onClick={() => {
+                            <button className="nav-link text-dark" onClick={() => {
                                 setShow(false);
                                 navigate(Paths.INDEX);
                             }}>Inicio</button>
                         </li>
                         <li className="nav-item">
-                            <button className="nav-link" onClick={() => {
+                            <button className="nav-link text-dark" onClick={() => {
                                 setShow(false);
                                 navigate(Paths.DAY_USER_SELECTION);
                             }}>Reservas Cuartelillo</button>
                         </li>
                         <li className="nav-item">
-                            <button className="nav-link" onClick={() => {
+                            <button className="nav-link text-dark" onClick={() => {
                                 setShow(false);
                                 navigate(Paths.RESERVATION_CALENDAR);
                             }}>Calendario reservas</button>
                         </li>
                         <li className="nav-item">
-                            <button className="nav-link" onClick={() => {
+                            <button className="nav-link text-dark" onClick={() => {
                                 setShow(false);
                                 navigate(Paths.TABLE_USER_SELECTION);
                             }}>Reservas Mesa M&C</button>
                         </li>
                         <li className="nav-item">
-                            <button className="nav-link" onClick={() => {
+                            <button className="nav-link text-dark" onClick={() => {
                                 setShow(false);
                                 navigate(Paths.TABLE_RESERVATIONS_SUMMARY);
                             }}>Resumen Mesas M&C</button>

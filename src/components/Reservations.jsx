@@ -83,7 +83,7 @@ export default function Reservations() {
             {reservations.map((reservation) => (
               <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
                 <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?reservationId=${reservation.id}&userId=${userId}`)}>
-                  <h5 className="card-title text-primary">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
+                  <h5 className="card-title text-dark">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
                   <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.guests !== 1 ? "s" : ""}</p>
                 </div>
 
@@ -99,7 +99,7 @@ export default function Reservations() {
 
       {/* Botón para agregar nueva reserva */}
       <div className="mt-1 text-center">
-        <button className="btn btn-primary rounded-circle shadow" style={{ width: "60px", height: "60px", fontSize: "28px" }} onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?userId=${userId}`)}>
+        <button className="btn btn-dark rounded-circle shadow" style={{ width: "60px", height: "60px", fontSize: "28px" }} onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?userId=${userId}`)}>
           +
         </button>
       </div>
