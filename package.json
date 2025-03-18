@@ -20,6 +20,7 @@
     "bootstrap": "^5.3.3",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "dayjs-plugin-utc": "^0.1.2",
     "firebase": "^11.3.0",
     "react": "^19.0.0",
     "react-datepicker": "^8.1.0",

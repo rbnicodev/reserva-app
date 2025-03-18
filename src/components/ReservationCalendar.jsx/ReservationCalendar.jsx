@@ -1,8 +1,8 @@
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
+import 'dayjs/locale/es'; 
 import { styled } from "@mui/material/styles";
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 import { Paths } from '../../utils/paths';
@@ -15,8 +15,8 @@ export default function ReservationCalendar() {
     const navigate = useNavigate();
     const [reservations, setReservations] = useState([]);
 
-    const isReserved = (date) => 
-        reservations.map(r => r.reservationDate).includes(dayjs(date['data-timestamp']).format("YYYY-MM-DD")); // 🚀 Usamos directamente date.format()
+    const isReserved = (date) =>
+        reservations.map(r => r.reservationDate).includes(dayjs(date['data-timestamp']).format("YYYY-MM-DD"));
 
     const ReservedDay = styled(PickersDay)(({ theme }) => ({
         backgroundColor: theme.palette.error.light,
@@ -26,14 +26,13 @@ export default function ReservationCalendar() {
             backgroundColor: theme.palette.error.dark,
         },
     }));
+
     useEffect(() => {
         const fetchData = async () => {
-            // Cargar reservas del usuario
             const reservationsCollection = collection(db, "reservationsDay");
             const reservationsQuery = query(reservationsCollection);
             const reservationsDocs = await getDocs(reservationsQuery);
 
-            // Guardamos las reservas ordenadas por `reservationDate`
             const sortedReservations = reservationsDocs.docs
                 .map((doc) => ({
                     id: doc.id,
@@ -45,10 +44,9 @@ export default function ReservationCalendar() {
         fetchData();
     });
 
-
     const renderCustomDay = (day, _selectedDates, pickersDayProps) => {
         return isReserved(day) ? (
-            <ReservedDay {...pickersDayProps} day={day.day} disabled={day.disabled} today={day.today} selected={day.selected}/>
+            <ReservedDay {...pickersDayProps} day={day.day} disabled={day.disabled} today={day.today} selected={day.selected} />
         ) : (
             <PickersDay {...pickersDayProps} day={day.day} disabled={day.disabled} today={day.today} selected={day.selected} />
         );
@@ -63,7 +61,7 @@ export default function ReservationCalendar() {
             </button>
             <h1 className="text-center">Reservas</h1>
             <div className="card shadow-sm p-3 mt-5 h-75 d-flex flex-column justify-content-around">
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
                     <DateCalendar
                         disablePast={true}
                         slots={{ day: renderCustomDay }}
