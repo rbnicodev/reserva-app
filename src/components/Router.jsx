@@ -8,6 +8,7 @@ import ReservationsDay from "./ReservationsDay.jsx";
 import Index from "./Index.jsx";
 import Layout from "./Layout.jsx";
 import { Paths } from "../utils/paths.js";
+import ReservationCalendar from "./ReservationCalendar.jsx/ReservationCalendar.jsx";
 
 export default function Router() {
   return (
@@ -21,6 +22,7 @@ export default function Router() {
           <Route path={Paths.TABLE_RESERVATIONS_SUMMARY} element={<ReservationsSummary />} />
           <Route path={Paths.DAY_USER_SELECTION} element={<UserSelectionDay />} />
           <Route path={Paths.DAY_RESERVATION} element={<ReservationsDay />} />
+          <Route path={Paths.RESERVATION_CALENDAR} element={<ReservationCalendar />} />
         </Routes>
       </Layout>
     </BrowserRouter>

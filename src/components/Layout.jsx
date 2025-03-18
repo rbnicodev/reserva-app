@@ -78,8 +78,7 @@ export default function Layout({ children }) {
                         <li className="nav-item">
                             <button className="nav-link" onClick={() => {
                                 setShow(false);
-                                alert("Not implemented...");
-                                //navigate(Paths.DAY_USER_SELECTION);
+                                navigate(Paths.RESERVATION_CALENDAR);
                             }}>Calendario reservas</button>
                         </li>
                         <li className="nav-item">
