@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { db } from "../firebase";
 import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where } from "firebase/firestore";
 import { allMenus, allShifts, restReservations } from "../utils/firebaseUtils";
+import { Paths } from "../utils/paths";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
@@ -131,7 +132,7 @@ export default function ReservationForm() {
       } else {
         await addDoc(collection(db, "reservations"), reservation);
       }
-      navigate(`/reservations?userId=${userId}`);
+      navigate(`${Paths.TABLE_RESERVATION}?userId=${userId}`);
     } catch (error) {
       console.error("Error al guardar la reserva:", error);
       setErrorMessage("Hubo un error al guardar la reserva. Inténtalo de nuevo.");
@@ -140,10 +141,10 @@ export default function ReservationForm() {
   };
 
   return (
-    <div className="container py-4 position-relative">
+    <div className="w-100 d-flex flex-column align-items-center">
       {/* Botón de volver */}
-      <button className="btn btn-link position-absolute top-0 start-0 mt-3 ms-3" onClick={() => navigate(`/reservations?userId=${userId}`)}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-arrow-left" viewBox="0 0 16 16">
+      <button className="btn btn-link position-absolute start-0 ms-3" onClick={() => navigate(`${Paths.TABLE_RESERVATION}?userId=${userId}`)}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="gray" className="bi bi-arrow-left" viewBox="0 0 16 16">
           <path fillRule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5" />
         </svg>
       </button>

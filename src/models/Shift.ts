@@ -1,5 +1,5 @@
 export interface Shift {
-    id: string;
+    id?: string;
     name?: string;
     order?: number;
     remainingSeats?: number;
