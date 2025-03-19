@@ -3,6 +3,8 @@ import { db } from "../firebase";
 import type { GlobalSettings } from "../models/GlobalSettings";
 import type { Shift } from "../models/Shift";
 import type { Menu } from "../models/Menu";
+import type { Price } from "../models/Price";
+import type { Reservation } from "../models/Reservation";
 
 // Función para obtener las configuraciones globales desde Firestore
 export const fetchGlobalSettings = async (): Promise<GlobalSettings | null> => {
@@ -72,4 +74,26 @@ export const restReservations = async (shiftId: string): Promise<number> => {
 
     const result = currentReservations <= maxReservations ? maxReservations - currentReservations : 0;
     return result;
+}
+
+export const userReservations = async (userId: string) : Promise<Reservation[] | null> => {
+  const reservationsCollection = collection(db, "reservations");
+      const reservationsQuery = query(reservationsCollection, where("userId", "==", userId));
+      const reservationsDocs = await getDocs(reservationsQuery);
+
+      return (reservationsDocs.docs.map(doc => {
+        const result: Reservation = {id: doc.id};
+        return {...result, ...doc.data()}
+      }))
+}
+
+export const allPrices = async (): Promise<Price[] | null> => {
+  const menuRef = collection(db, "prices");
+  const menuQuery = query(menuRef);
+  const snapShot = await getDocs(menuQuery);
+
+  return (snapShot.docs.map(doc => {
+    const result: Price = {id: doc.id};
+    return {...result, ...doc.data()};
+  }));
 }

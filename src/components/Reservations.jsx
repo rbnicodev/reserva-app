@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { collection, getDocs, query, where, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { Paths } from "../utils/paths";
+import { allPrices, allMenus, userReservations } from "../utils/firebaseUtils";
 
 export default function Reservations() {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ export default function Reservations() {
   const [reservations, setReservations] = useState([]);
   const [shifts, setShifts] = useState({});
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [menus, setMenus] = useState([]);
+  const [prices, setPrices] = useState([]);
 
   // Cargar reservas y turnos desde Firebase
   useEffect(() => {
@@ -30,18 +33,18 @@ export default function Reservations() {
       });
       setShifts(shiftsData);
 
-      // Cargar reservas del usuario
-      const reservationsCollection = collection(db, "reservations");
-      const reservationsQuery = query(reservationsCollection, where("userId", "==", userId));
-      const reservationsDocs = await getDocs(reservationsQuery);
+      // Cargar precios
+      const pricesData = await allPrices();
+      setPrices(pricesData);
 
+      // Cargar menus
+      const menusData = await allMenus();
+      setMenus(menusData);
+
+
+      // Cargar reservas del usuario
       // Guardamos las reservas ordenadas por `shift.order`
-      const sortedReservations = reservationsDocs.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .sort((a, b) => (shiftsData[a.shiftId]?.order ?? 0) - (shiftsData[b.shiftId]?.order ?? 0));
+      const sortedReservations = (await userReservations(userId)).sort((a, b) => (shiftsData[a.shiftId]?.order ?? 0) - (shiftsData[b.shiftId]?.order ?? 0));
 
       setReservations(sortedReservations);
     };
@@ -73,6 +76,17 @@ export default function Reservations() {
       </button>
 
       <h1 className="text-center mb-4">Tus Reservas</h1>
+      {reservations && reservations.length > 0 && (
+        <p className="text-secondary">
+          Total: {reservations.reduce((acc, reservation) => {
+            const menu = menus.find(m => m.shiftId === reservation.shiftId);
+            const price = prices.find(p => p.id === menu?.priceId);
+            return acc + (price?.amount || 0) * reservation.guests;
+          }, 0)}
+          €
+        </p>
+      )}
+
 
       {/* Lista de reservas */}
       <div className="w-100 d-flex flex-column align-items-center">
@@ -84,13 +98,17 @@ export default function Reservations() {
               <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
                 <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?reservationId=${reservation.id}&userId=${userId}`)}>
                   <h5 className="card-title text-dark">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
-                  <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.guests !== 1 ? "s" : ""}</p>
+                  <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.kids !== 1 ? "s" : ""}</p>
+                  <p className="card-text text-secondary">
+                    {prices.find(p => p.id === menus.find(m => m.shiftId === reservation.shiftId).priceId).amount * reservation.guests}€
+                  </p>
                 </div>
 
                 {/* Botón de eliminar */}
                 <button className="btn btn-sm" onClick={() => setConfirmDeleteId(reservation.id)}>
                   🗑️
                 </button>
+
               </div>
             ))}
           </div>
