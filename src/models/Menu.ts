@@ -1,7 +1,8 @@
 export interface Menu {
-    id: string;
+    id?: string;
     shiftId?: string;
     incomings?: string[];
     mainPlate?: string;
     dessert?: string;
+    priceId?: string;
 }
