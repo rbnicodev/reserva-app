@@ -4,4 +4,5 @@ export interface Menu {
     incomings?: string[];
     mainPlate?: string;
     dessert?: string;
+    priceId?: string;
 }
