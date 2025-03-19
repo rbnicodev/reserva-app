@@ -24,7 +24,8 @@ export default function ReservationsDay() {
   const [createReservation, setCreateReservation] = useState(null);
   const [newReservation, setNewReservation] = useState(null);
 
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [allreservations, setallreservations] = useState([]);
 
   // Cargar reservas y turnos desde Firebase
   useEffect(() => {
@@ -36,13 +37,17 @@ export default function ReservationsDay() {
       const reservationsQuery = query(reservationsCollection, where("userId", "==", userId));
       const reservationsDocs = await getDocs(reservationsQuery);
 
+      const allReservationsDocs = await getDocs(query(reservationsCollection));
+      setallreservations(allReservationsDocs.docs.map((doc) => new Date(doc.data().reservationDate)));
+
       // Guardamos las reservas ordenadas por `reservationDate`
       const sortedReservations = reservationsDocs.docs
         .map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }))
-        .sort((a, b) => (a.reservationDate - b.reservationDate));
+        .sort((a, b) => new Date(a.reservationDate).getTime() - new Date(b.reservationDate).getTime());
+
 
       setReservations(sortedReservations);
     };
@@ -53,10 +58,17 @@ export default function ReservationsDay() {
   // Función para eliminar una reserva
   const deleteReservation = async () => {
     if (!confirmDeleteId) return;
+    setallreservations(allreservations.filter(ar => (format(ar, 'yyyy-MM-dd')) !== (reservations.find(r => r.id === confirmDeleteId).reservationDate)));
 
     try {
       await deleteDoc(doc(db, "reservationsDay", confirmDeleteId)); // Borra el documento correctamente
-      setReservations(reservations.filter((r) => r.id !== confirmDeleteId)); // Elimina del estado
+      setReservations(
+        reservations
+          .filter((r) => r.id !== confirmDeleteId)
+          .sort((a, b) => new Date(a.reservationDate).getTime() - new Date(b.reservationDate).getTime())
+      );
+      
+      setSelectedDate(null);
     } catch (error) {
       console.error("Error eliminando la reserva:", error);
     }
@@ -67,7 +79,7 @@ export default function ReservationsDay() {
 
   const saveReservation = async (date) => {
     if (!date) return;
-
+    setallreservations([...allreservations, date]);
     const formattedDate = format(date, "yyyy-MM-dd"); // Formatea la fecha en texto
 
     try {
@@ -81,6 +93,7 @@ export default function ReservationsDay() {
       if (docSnap.exists()) {
         setReservations([...reservations, { id: docSnap.id, ...docSnap.data() }]);
       }
+      setSelectedDate(null);
     } catch (error) {
       console.error("Error creando la reserva:", error);
     }
@@ -112,8 +125,8 @@ export default function ReservationsDay() {
 
               const formattedDate = reservation.reservationDate
                 ? format(new Date(reservation.reservationDate), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })
-                .toLowerCase()
-                .replace(/^\w/, (char) => char.toUpperCase())
+                  .toLowerCase()
+                  .replace(/^\w/, (char) => char.toUpperCase())
                 : "Fecha desconocida";
 
 
@@ -184,6 +197,8 @@ export default function ReservationsDay() {
                   locale="es"
                   todayButton="Hoy"
                   calendarStartDay={1}
+                  excludeDates={allreservations}
+
                 />
               </div>
               <div className="modal-footer">
