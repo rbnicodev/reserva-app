@@ -152,7 +152,7 @@ export default function ReservationForm() {
       <h1 className="text-center mb-4">{reservationId ? "Editar Reserva" : "Nueva Reserva"}</h1>
 
       {!!reservation && reservation.userId ?
-        <div>
+        <div className="w-100">
           <div className="mb-3">
             <label className="form-label"><strong>Adultos</strong></label>
             <input
