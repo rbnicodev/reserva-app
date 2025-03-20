@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Para redirección
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
-import ListUsers from "./ListUsers";
-import { Paths } from "../utils/paths";
-import Header from "./Header";
+import { db } from "../../firebase";
+import ListUsers from "../ListUsers";
+import { Paths } from "../../utils/paths";
+import Header from "../Header";
 
-export default function UserSelectionDay() {
+export default function UserSelection() {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate();
 
@@ -24,8 +24,8 @@ export default function UserSelectionDay() {
 
   return (
     <div>
-      {Header(Paths.INDEX, "Reservar Día")}
-      {ListUsers(users, Paths.DAY_RESERVATION)}
-    </div>
+          {Header(Paths.INDEX, "Reserva M&C")}
+          {ListUsers(users, Paths.TABLE_RESERVATION)}
+        </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Paths } from "../utils/paths";
+import { Paths } from "../../utils/paths";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 

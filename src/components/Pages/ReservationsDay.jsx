@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { db } from "../firebase";
-import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, deleteDoc } from "firebase/firestore";
+import { db } from "../../firebase";
+import { collection, doc, getDoc, getDocs, addDoc, query, where, deleteDoc } from "firebase/firestore";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es"; // Importa el idioma español
 import { format } from "date-fns";
-import { Paths } from "../utils/paths";
-import Header from "./Header";
+import { Paths } from "../../utils/paths";
+import Header from "../Header";
 
 
 export default function ReservationsDay() {
