@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { FaBars } from 'react-icons/fa'; // Icono de FontAwesome
 import { useNavigate } from "react-router-dom";
 import { Paths } from "../utils/paths";
+import "./Layout.css";
 
 export default function Layout({ children }) {
     const [show, setShow] = useState(false);
@@ -17,7 +18,7 @@ export default function Layout({ children }) {
     return (
         <div className="d-flex flex-column vh-100">
             {/* Navbar */}
-            <nav className="navbar navbar-dark bg-dark px-3">
+            <nav className="navbar navbar-dark bg-dark px-3" style={{position: "fixed", top: 0, width: "100vw", height: "66px", zIndex:1000}}>
                 <button
                     className="btn btn-outline-light"
                     onClick={toggleSidebar} // Función de toggle directamente
@@ -98,7 +99,7 @@ export default function Layout({ children }) {
             </div>
 
             {/* Contenido principal */}
-            <main className="flex-grow-1 p-3" style={{ paddingLeft: show ? "66vw" : "0" }}>
+            <main className="flex-grow-1 p-3 main-layout" style={{ paddingLeft: show ? "66vw" : "0" }}>
                 {children}
             </main>
         </div>
