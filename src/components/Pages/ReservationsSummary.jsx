@@ -7,6 +7,7 @@ import Header from "../Header";
 
 export default function ReservationsSummary() {
     const navigate = useNavigate();
+    useEffect(() => { window.scrollTo(0, 0); }, []);
     const [summary, setSummary] = useState([]);
 
     useEffect(() => {
@@ -60,7 +61,7 @@ export default function ReservationsSummary() {
                     {summary.map(({ name, adults, kids, shiftId }, index) => (
                         <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={index}>
                             <div className="cursor-pointer flex-grow-1" >
-                                <h5 className="card-title text-primary">{name}</h5>
+                                <h5 className="card-title text-dark">{name}</h5>
                                 <p className="card-text">👥 {adults} Adulto{adults > 1 ? "s" : ""} | 🧒 {kids} Niño{kids !== 1 ? "s" : ""}</p>
                             </div>
 

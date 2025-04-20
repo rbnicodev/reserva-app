@@ -9,6 +9,7 @@ import Header from "../Header";
 
 export default function ReservationsDetail() {
     const navigate = useNavigate();
+    useEffect(() => { window.scrollTo(0, 0); }, []);
     const location = useLocation();
 
     const searchParams = new URLSearchParams(location.search);
@@ -56,11 +57,6 @@ export default function ReservationsDetail() {
         
     fetchData();
     }, [shiftId]);
-
-    useEffect(() => console.dir(menus), [menus]);
-    useEffect(() => console.dir(prices), [prices]);
-    useEffect(() => console.dir(shift), [shift]);
-    useEffect(() => console.dir(users), [users]);
     return (
         <div >
 

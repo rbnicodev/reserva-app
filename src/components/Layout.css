@@ -2,3 +2,9 @@
     padding-top: 66px !important;
     height: 95vh !important;
 }
+
+@media print {
+    .no-print {
+      display: none !important;
+    }
+  }

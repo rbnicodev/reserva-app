@@ -8,6 +8,7 @@ import Header from ".././Header";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);

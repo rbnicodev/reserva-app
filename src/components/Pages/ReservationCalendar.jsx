@@ -14,6 +14,7 @@ import Header from '../Header';
 
 export default function ReservationCalendar() {
     const navigate = useNavigate();
+    useEffect(() => { window.scrollTo(0, 0); }, []);
     const [reservations, setReservations] = useState([]);
 
     const isReserved = (date) =>

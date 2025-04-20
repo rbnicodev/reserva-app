@@ -14,6 +14,7 @@ export default function ReservationsDay() {
 
   registerLocale("es", es);
   const navigate = useNavigate();
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   const location = useLocation();
 
   // Obtener `userId` de la URL
