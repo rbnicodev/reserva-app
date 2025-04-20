@@ -71,7 +71,7 @@ export default function Reservations() {
     <div >
 
       {Header(Paths.TABLE_USER_SELECTION, "Tus Reservas")}
-      <div style={{ width: "auto", paddingTop: "90px" }}>
+      <div style={{ width: "auto", paddingTop: "90px", paddingBottom: "20px" }}>
         {reservations && reservations.length > 0 && (
           <p className="text-secondary">
             Total: {reservations.reduce((acc, reservation) => {
@@ -120,7 +120,7 @@ export default function Reservations() {
 
         {/* Modal de confirmación de eliminación */}
         {confirmDeleteId && (
-          <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)" }}>
+          <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)", marginTop: "66px" }}>
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header">

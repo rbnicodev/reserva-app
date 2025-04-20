@@ -33,6 +33,7 @@ export default function ReservationsSummary() {
                         adults: 0,
                         kids: 0,
                         guests: 0,
+                        shiftId
                     };
                 }
                 shiftSummary[shiftId].adults += (guests || 0);
@@ -56,14 +57,14 @@ export default function ReservationsSummary() {
                 <p style={{paddingTop:"90px"}} className="text-secondary text-center">Cargando datos...</p>
             ) : (
                 <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", paddingTop:"90px", paddingBottom:"20px" }}>
-                    {summary.map(({ name, adults, kids }, index) => (
+                    {summary.map(({ name, adults, kids, shiftId }, index) => (
                         <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={index}>
                             <div className="cursor-pointer flex-grow-1" >
                                 <h5 className="card-title text-primary">{name}</h5>
                                 <p className="card-text">👥 {adults} Adulto{adults > 1 ? "s" : ""} | 🧒 {kids} Niño{kids !== 1 ? "s" : ""}</p>
                             </div>
 
-                            <button className="btn btn-sm" onClick={() => alert("Detail: NOT IMPLEMENTED")}>
+                            <button className="btn btn-sm" onClick={() => navigate(`${Paths.TABLE_RESERVATIONS_DETAIL}?shiftId=${shiftId}`)}>
                                 🔎
                             </button>
                         </div>
