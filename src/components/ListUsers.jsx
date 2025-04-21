@@ -5,11 +5,11 @@ export default function ListUsers(users, url) {
     const navigate = useNavigate();
 
     return (
-        <div style={{height: "75vh", overflowY: "auto", overflowX: "hidden"}}>
+        <div className="mt-4">
             {users.length === 0 ? (
             <p className="text-secondary">Cargando usuarios...</p>
             ) : (
-            <div className="row row-cols-2 row-cols-sm-3 g-3 w-110" style={{ maxWidth: "600px" }}>
+            <div className="row row-cols-2 row-cols-sm-3 g-3 w-110" style={{ maxWidth: "600px", paddingTop: "70px", paddingBottom: "20px" }}>
                 {users.map(user => (
                     <div className="col" key={user.id}>
                         <button

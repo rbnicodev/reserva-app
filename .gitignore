@@ -28,3 +28,6 @@ pnpm-debug.log*
 
 .firebase/
 src/firebase.ts
+
+/android/
+**/android/

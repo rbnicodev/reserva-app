@@ -7,4 +7,5 @@ export enum Paths {
     RESERVATION_CALENDAR = `/reservation_calendar`,
     TABLE_RESERVATION_FORM = `/table_reservation_form`,
     TABLE_RESERVATIONS_SUMMARY = `/table_reservations_summary`,
+    TABLE_RESERVATIONS_DETAIL = `/table_reservations_detail`,
 }

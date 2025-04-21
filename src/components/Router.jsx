@@ -1,14 +1,15 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import UserSelection from "./UserSelection.jsx"; // Página principal
-import Reservations from "./Reservations.jsx"; // Página de reservas
-import ReservationForm from "./ReservationForm.jsx";
-import ReservationsSummary from "./ReservationsSummary.jsx";
-import UserSelectionDay from "./UserSelectionDay.jsx";
-import ReservationsDay from "./ReservationsDay.jsx";
-import Index from "./Index.jsx";
+import UserSelection from "./Pages/UserSelection.jsx";
+import Reservations from "./Pages/Reservations.jsx";
+import ReservationForm from "./Pages/ReservationForm.jsx";
+import ReservationsSummary from "./Pages/ReservationsSummary.jsx";
+import UserSelectionDay from "./Pages/UserSelectionDay.jsx";
+import Index from "./Pages/Index.jsx";
 import Layout from "./Layout.jsx";
 import { Paths } from "../utils/paths.js";
-import ReservationCalendar from "./ReservationCalendar.jsx/ReservationCalendar.jsx";
+import ReservationCalendar from "./Pages/ReservationCalendar.jsx";
+import ReservationsDay from "./Pages/ReservationsDay.jsx";
+import ReservationsDetail from "./Pages/ReservationsDetail.jsx";
 
 export default function Router() {
   return (
@@ -23,6 +24,7 @@ export default function Router() {
           <Route path={Paths.DAY_USER_SELECTION} element={<UserSelectionDay />} />
           <Route path={Paths.DAY_RESERVATION} element={<ReservationsDay />} />
           <Route path={Paths.RESERVATION_CALENDAR} element={<ReservationCalendar />} />
+          <Route path={Paths.TABLE_RESERVATIONS_DETAIL} element={<ReservationsDetail />} />
         </Routes>
       </Layout>
     </BrowserRouter>
