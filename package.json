@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@astrojs/react": "^4.2.4",
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/cli": "^7.2.0",
+    "@capacitor/core": "^7.2.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.2.5",
@@ -21,7 +24,7 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "dayjs-plugin-utc": "^0.1.2",
-    "firebase": "^11.3.0",
+    "firebase": "^11.6.0",
     "react": "^19.0.0",
     "react-datepicker": "^8.1.0",
     "react-dom": "^19.0.0",
