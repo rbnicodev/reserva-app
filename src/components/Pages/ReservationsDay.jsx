@@ -14,6 +14,7 @@ export default function ReservationsDay() {
 
   registerLocale("es", es);
   const navigate = useNavigate();
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   const location = useLocation();
 
   // Obtener `userId` de la URL
@@ -150,7 +151,7 @@ export default function ReservationsDay() {
 
       {/* Modal de confirmación de eliminación */}
       {confirmDeleteId && (
-        <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)" }}>
+        <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)", marginTop: "66px" }}>
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
@@ -174,7 +175,7 @@ export default function ReservationsDay() {
       )}
 
       {createReservation && (
-        <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)" }}>
+        <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)", marginTop: "66px" }}>
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">

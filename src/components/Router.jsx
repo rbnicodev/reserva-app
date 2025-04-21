@@ -9,6 +9,7 @@ import Layout from "./Layout.jsx";
 import { Paths } from "../utils/paths.js";
 import ReservationCalendar from "./Pages/ReservationCalendar.jsx";
 import ReservationsDay from "./Pages/ReservationsDay.jsx";
+import ReservationsDetail from "./Pages/ReservationsDetail.jsx";
 
 export default function Router() {
   return (
@@ -23,6 +24,7 @@ export default function Router() {
           <Route path={Paths.DAY_USER_SELECTION} element={<UserSelectionDay />} />
           <Route path={Paths.DAY_RESERVATION} element={<ReservationsDay />} />
           <Route path={Paths.RESERVATION_CALENDAR} element={<ReservationCalendar />} />
+          <Route path={Paths.TABLE_RESERVATIONS_DETAIL} element={<ReservationsDetail />} />
         </Routes>
       </Layout>
     </BrowserRouter>

@@ -9,6 +9,7 @@ import Header from "../Header";
 export default function UserSelection() {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate();
+  useEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {

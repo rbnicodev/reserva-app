@@ -8,6 +8,7 @@ import Header from ".././Header";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
@@ -147,97 +148,99 @@ export default function ReservationForm() {
       {Header(`${Paths.TABLE_RESERVATION}?userId=${userId}`, reservationId ? "Editar Reserva" : "Nueva Reserva")}
       {/* Botón de volver */}
 
-      {!!reservation && reservation.userId ?
-        <div className="w-100" style={{paddingTop:"70px"}}>
-          <div className="mb-3">
-            <label className="form-label"><strong>Adultos</strong></label>
-            <input
-              type="number"
-              className="form-control"
-              value={reservation.guests === null ? "" : reservation.guests} // Permite temporalmente vacío
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === "" || isNaN(value)) {
-                  setReservation({ ...reservation, guests: null }); // Permitir vacío temporalmente
-                } else {
-                  setReservation({ ...reservation, guests: Number(value) });
-                }
-              }}
-              onBlur={(e) => {
-                const value = Number(e.target.value);
-                setReservation({ ...reservation, guests: isNaN(value) || value < 1 ? 1 : value });
-              }}
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label"><strong>Niños</strong></label>
-            <input
-              type="number"
-              className="form-control"
-              value={reservation.kids === null ? "" : reservation.kids}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === "" || isNaN(value)) {
-                  setReservation({ ...reservation, kids: null });
-                } else {
-                  setReservation({ ...reservation, kids: Number(value) });
-                }
-              }}
-              onBlur={(e) => {
-                const value = Number(e.target.value);
-                setReservation({ ...reservation, kids: isNaN(value) || value < 0 ? 0 : value });
-              }}
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="form-label"><strong>Turno</strong></label>
-            {reservationId ? (
-              <p className="form-control-plaintext">{currentShiftName || "Turno no encontrado"}</p>
-            ) : (
-              <select className="form-select" value={reservation.shiftId} onChange={(e) => {
-                setReservation({ ...reservation, shiftId: e.target.value });
-                setMenu(menus?.find(m => m.shiftId === e.target.value));
-              }}>
-                <option value="">Selecciona un turno</option>
-                {availableShifts.map((shift) => (
-                  <option key={shift.id} value={shift.id} disabled={shift.remainingSeats <= 0}>
-                    {shift.name} {shift.remainingSeats <= 0 ? "(Sin plazas)" : ""}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <button className="btn btn-primary w-100" onClick={saveReservation}>
-            Guardar
-          </button>
-
-          {!!menu && !!menu.incomings && !!menu.mainPlate && !!menu.dessert ? (
-            <div className="card shadow-sm p-3 mt-3" >
-              <div className="card-title text-secondary">
-                <h5><strong>Menú</strong></h5>
-              </div>
-              <div className="mb-1 card-text">
-                <label className="form-label text-secondary mb-1"><strong>Entrantes</strong></label>
-                <p className="form-control-plaintext text-secondary mt-0">{menu.incomings.join(", ")}</p>
-              </div>
-
-              <div className="mb-1 card-text">
-                <label className="form-label text-secondary mb-1"><strong>Plato principal</strong></label>
-                <p className="form-control-plaintext text-secondary mt-0">{menu.mainPlate}</p>
-              </div>
-
-              <div className="mb-1 card-text">
-                <label className="form-label text-secondary mb-1"><strong>Postre</strong></label>
-                <p className="form-control-plaintext text-secondary mt-0">{menu.dessert}</p>
-              </div>
+      <div style={{ paddingTop: "90px", paddingBottom: "20px", width: "90vw" }}>
+        {!!reservation && reservation.userId ?
+          <div className="w-100">
+            <div className="mb-3">
+              <label className="form-label"><strong>Adultos</strong></label>
+              <input
+                type="number"
+                className="form-control"
+                value={reservation.guests === null ? "" : reservation.guests} // Permite temporalmente vacío
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || isNaN(value)) {
+                    setReservation({ ...reservation, guests: null }); // Permitir vacío temporalmente
+                  } else {
+                    setReservation({ ...reservation, guests: Number(value) });
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = Number(e.target.value);
+                  setReservation({ ...reservation, guests: isNaN(value) || value < 1 ? 1 : value });
+                }}
+              />
             </div>
-          ) : (<div></div>)}
-        </div>
-        : <p className="text-secondary text-center" style={{paddingTop:"70px"}}>Cargando datos...</p>
-      }
+
+            <div className="mb-3">
+              <label className="form-label"><strong>Niños</strong></label>
+              <input
+                type="number"
+                className="form-control"
+                value={reservation.kids === null ? "" : reservation.kids}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || isNaN(value)) {
+                    setReservation({ ...reservation, kids: null });
+                  } else {
+                    setReservation({ ...reservation, kids: Number(value) });
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = Number(e.target.value);
+                  setReservation({ ...reservation, kids: isNaN(value) || value < 0 ? 0 : value });
+                }}
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="form-label"><strong>Turno</strong></label>
+              {reservationId ? (
+                <p className="form-control-plaintext">{currentShiftName || "Turno no encontrado"}</p>
+              ) : (
+                <select className="form-select" value={reservation.shiftId} onChange={(e) => {
+                  setReservation({ ...reservation, shiftId: e.target.value });
+                  setMenu(menus?.find(m => m.shiftId === e.target.value));
+                }}>
+                  <option value="">Selecciona un turno</option>
+                  {availableShifts.map((shift) => (
+                    <option key={shift.id} value={shift.id} disabled={shift.remainingSeats <= 0}>
+                      {shift.name} {shift.remainingSeats <= 0 ? "(Sin plazas)" : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <button className="btn btn-primary w-100" onClick={saveReservation}>
+              Guardar
+            </button>
+
+            {!!menu && !!menu.incomings && !!menu.mainPlate && !!menu.dessert ? (
+              <div className="card shadow-sm p-3 mt-3" >
+                <div className="card-title text-secondary">
+                  <h5><strong>Menú</strong></h5>
+                </div>
+                <div className="mb-1 card-text">
+                  <label className="form-label text-secondary mb-1"><strong>Entrantes</strong></label>
+                  <p className="form-control-plaintext text-secondary mt-0">{menu.incomings.join(", ")}</p>
+                </div>
+
+                <div className="mb-1 card-text">
+                  <label className="form-label text-secondary mb-1"><strong>Plato principal</strong></label>
+                  <p className="form-control-plaintext text-secondary mt-0">{menu.mainPlate}</p>
+                </div>
+
+                <div className="mb-1 card-text">
+                  <label className="form-label text-secondary mb-1"><strong>Postre</strong></label>
+                  <p className="form-control-plaintext text-secondary mt-0">{menu.dessert}</p>
+                </div>
+              </div>
+            ) : (<div></div>)}
+          </div>
+          : <p className="text-secondary text-center" style={{ paddingTop: "70px" }}>Cargando datos...</p>
+        }
+      </div>
 
       {/* Modal de error */}
       {errorDialogOpen && (
