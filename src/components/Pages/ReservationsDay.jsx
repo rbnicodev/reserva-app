@@ -25,13 +25,19 @@ export default function ReservationsDay() {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [createReservation, setCreateReservation] = useState(null);
   const [newReservation, setNewReservation] = useState(null);
+  const [minimDate, setMinimDate] = useState(null)
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [allreservations, setallreservations] = useState([]);
-
   // Cargar reservas y turnos desde Firebase
   useEffect(() => {
     if (!userId) return;
+
+    
+
+    const setMinDate = new Date();
+    setMinDate.setDate(setMinDate.getDate() + 1);
+    setMinimDate(setMinDate);
 
     const fetchData = async () => {
       // Cargar reservas del usuario
@@ -111,30 +117,42 @@ export default function ReservationsDay() {
       {Header(Paths.DAY_USER_SELECTION, "Días reservados")}
 
       {/* Lista de reservas */}
-      <div style={{paddingTop:"90px"}}>
+      <div style={{ paddingTop: "90px" }}>
         {reservations.length === 0 ? (
           <p className="text-secondary text-center">No hay reservas todavía.</p>
         ) : (
           <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
             {reservations.map((reservation) => {
+              const reservationDate = reservation.reservationDate ? new Date(reservation.reservationDate) : null;
+              const flagPastDate = new Date();
+              const isPastDate = reservationDate && reservationDate <= flagPastDate;
 
-              const formattedDate = reservation.reservationDate
-                ? format(new Date(reservation.reservationDate), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })
+              const formattedDate = reservationDate
+                ? format(reservationDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })
                   .toLowerCase()
                   .replace(/^\w/, (char) => char.toUpperCase())
                 : "Fecha desconocida";
 
-
               return (
-                <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
-                  <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`${Paths.DAY_USER_SELECTION}?reservationId=${reservation.id}&userId=${userId}`)}>
+                <div
+                  className={`card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between ${isPastDate ? 'opacity-50 pointer-events-none' : ''}`}
+                  key={reservation.id}
+                >
+                  <div
+                    className="cursor-pointer flex-grow-1"
+                    onClick={!isPastDate ? () => navigate(`${Paths.DAY_USER_SELECTION}?reservationId=${reservation.id}&userId=${userId}`) : undefined}
+                  >
                     <h5 className="card-title text-dark">{formattedDate}</h5>
                   </div>
 
                   {/* Botón de eliminar */}
-                  <button className="btn btn-sm" onClick={() => setConfirmDeleteId(reservation.id)}>
+                  {!isPastDate ? (<button
+                    className="btn btn-sm"
+                    onClick={() => setConfirmDeleteId(reservation.id)}
+                    disabled={isPastDate}
+                  >
                     🗑️
-                  </button>
+                  </button>) : (<></>)}
                 </div>
               );
             })}
@@ -193,6 +211,7 @@ export default function ReservationsDay() {
                   todayButton="Hoy"
                   calendarStartDay={1}
                   excludeDates={allreservations}
+                  minDate={minimDate}
 
                 />
               </div>
