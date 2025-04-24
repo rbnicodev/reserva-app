@@ -8,4 +8,5 @@ export enum Paths {
     TABLE_RESERVATION_FORM = `/table_reservation_form`,
     TABLE_RESERVATIONS_SUMMARY = `/table_reservations_summary`,
     TABLE_RESERVATIONS_DETAIL = `/table_reservations_detail`,
+    BULLETIN_BOARD = `/bulletin_board`
 }
