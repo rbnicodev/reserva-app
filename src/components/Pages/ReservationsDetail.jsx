@@ -61,7 +61,7 @@ export default function ReservationsDetail() {
         <div >
 
             {Header(Paths.TABLE_RESERVATIONS_SUMMARY, (shift?.name ?? ""))}
-            <div style={{ width: "auto", paddingTop: "90px", paddingBottom: "20px" }}>
+            <div style={{ width: "auto", paddingTop: "95px", paddingBottom: "20px" }}>
                 {reservations && reservations.length > 0 && (
                     <p className="text-secondary">
                         Total: {reservations.reduce((acc, reservation) => {
