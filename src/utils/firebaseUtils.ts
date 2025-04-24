@@ -5,6 +5,7 @@ import type { Shift } from "../models/Shift";
 import type { Menu } from "../models/Menu";
 import type { Price } from "../models/Price";
 import type { Reservation } from "../models/Reservation";
+import type { BoardEntry } from "../models/BoardEntry";
 
 // Función para obtener las configuraciones globales desde Firestore
 export const fetchGlobalSettings = async (): Promise<GlobalSettings | null> => {
@@ -97,3 +98,22 @@ export const allPrices = async (): Promise<Price[] | null> => {
     return {...result, ...doc.data()};
   }));
 }
+
+export const allEntries = async (): Promise<BoardEntry[]> => {
+  const menuRef = collection(db, "boardEntries");
+  const menuQuery = query(menuRef);
+  const snapShot = await getDocs(menuQuery);
+
+  return snapShot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      title: data.title || "",
+      subtitle: data.subtitle || "",
+      content: data.content || "",
+      order: data.order || 0,
+      footer: data.footer,
+      imageUrl: data.imageUrl,
+    } as BoardEntry;
+  });
+};
