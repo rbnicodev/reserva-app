@@ -8,7 +8,7 @@ export default function Index() {
     const navigate = useNavigate();
     useEffect(() => { window.scrollTo(0, 0); }, []);
     return (
-        <div className="text-center d-flex flex-column justify-content-around">
+        <div className="text-center d-flex flex-column justify-content-around" style={{paddingBottom:"1em"}}>
             <h1 className="mt-4">INICIO</h1>
             <div className="card shadow-sm p-3 mt-4 d-flex flex-column justify-content-around" >
                 <button type="button" className="btn btn-light py-4 my-2" onClick={() => navigate(Paths.BULLETIN_BOARD)}>Tablón</button>

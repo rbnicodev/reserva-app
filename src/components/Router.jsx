@@ -11,6 +11,7 @@ import ReservationCalendar from "./Pages/ReservationCalendar.jsx";
 import ReservationsDay from "./Pages/ReservationsDay.jsx";
 import ReservationsDetail from "./Pages/ReservationsDetail.jsx";
 import Board from "./Pages/Board.tsx";
+import ProgramacionMoros from "./Pages/ProgramacionMoros.tsx";
 
 export default function Router() {
   return (
@@ -27,6 +28,7 @@ export default function Router() {
           <Route path={Paths.RESERVATION_CALENDAR} element={<ReservationCalendar />} />
           <Route path={Paths.TABLE_RESERVATIONS_DETAIL} element={<ReservationsDetail />} />
           <Route path={Paths.BULLETIN_BOARD} element={<Board />} />
+          <Route path={Paths.PROGRAMACION_MOROS} element={<ProgramacionMoros />} />
         </Routes>
       </Layout>
     </BrowserRouter>
