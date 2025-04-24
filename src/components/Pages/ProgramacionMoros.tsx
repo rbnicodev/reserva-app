@@ -2,6 +2,8 @@ import { Paths } from "../../utils/paths";
 import Header from "../Header";
 
 export default function ProgramacionMoros() {
+    
+    window.scrollTo(0, 0);
     const imagenes = [
         "/docs/viernes.png",
         "/docs/sabado.png",
@@ -13,7 +15,7 @@ export default function ProgramacionMoros() {
     return (
         <div>
             {Header(Paths.BULLETIN_BOARD, "Programación")}
-            <div style={{ paddingTop: "90px", width: "auto", paddingBottom: "1em" }}>
+            <div style={{ paddingTop: "95px", width: "auto", paddingBottom: "1em" }}>
                 {imagenes.map((src) => (
                     <div className="mb-4 text-center">
                         <img src={src} className="img-fluid" style={{ maxWidth: "500px;" }} alt="Imagen de /docs/" />

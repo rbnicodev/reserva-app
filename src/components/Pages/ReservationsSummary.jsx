@@ -55,7 +55,7 @@ export default function ReservationsSummary() {
             {Header(Paths.INDEX, "Mesas M&C")}
 
             {summary.length === 0 ? (
-                <p style={{paddingTop:"90px"}} className="text-secondary text-center">Cargando datos...</p>
+                <p style={{paddingTop:"95px"}} className="text-secondary text-center">Cargando datos...</p>
             ) : (
                 <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", paddingTop:"90px", paddingBottom:"20px" }}>
                     {summary.map(({ name, adults, kids, shiftId }, index) => (

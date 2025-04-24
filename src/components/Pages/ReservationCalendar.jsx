@@ -106,7 +106,7 @@ export default function ReservationCalendar() {
         <div>
             {Header(Paths.INDEX, "Reservas")}
 
-            <div style={{ paddingTop: "90px", width: "auto" }}>
+            <div style={{ paddingTop: "95px", width: "auto" }}>
                 <div className="card shadow-sm d-flex flex-column justify-content-around">
                     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
                         <DateCalendar

@@ -148,7 +148,7 @@ export default function ReservationForm() {
       {Header(`${Paths.TABLE_RESERVATION}?userId=${userId}`, reservationId ? "Editar Reserva" : "Nueva Reserva")}
       {/* Botón de volver */}
 
-      <div style={{ paddingTop: "90px", paddingBottom: "20px", width: "90vw" }}>
+      <div style={{ paddingTop: "95px", paddingBottom: "20px", width: "90vw" }}>
         {!!reservation && reservation.userId ?
           <div className="w-100">
             <div className="mb-3">
