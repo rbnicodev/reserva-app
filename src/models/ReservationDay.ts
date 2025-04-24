@@ -1,5 +1,6 @@
 export interface ReservationDay {
     id?: string;
     userId?: string;
-    reservationDate?: Date
+    reservationDate?: Date,
+    isCommon?: boolean
 }

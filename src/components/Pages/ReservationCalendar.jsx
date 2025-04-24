@@ -18,15 +18,31 @@ export default function ReservationCalendar() {
     const [users, setUsers] = useState([]);
     const [consultar, setConsultar] = useState(null);
 
-    const isReserved = (date) =>
-        reservations.map(r => r.reservationDate).includes(dayjs(date['data-timestamp']).format("YYYY-MM-DD"));
+    const isReserved = (date) => {
+        const formatted = dayjs(date['data-timestamp']).format("YYYY-MM-DD");
+        return reservations.some(r => dayjs(r.reservationDate).format("YYYY-MM-DD") === formatted);
+    };
+    const isCommon = (date) => {
+        const formatted = dayjs(date['data-timestamp']).format("YYYY-MM-DD");
+        const res = reservations.find(r => dayjs(r.reservationDate).format("YYYY-MM-DD") === formatted);
+        return res?.isCommon === true;
+    };
 
     const ReservedDay = styled(PickersDay)(({ theme }) => ({
-        backgroundColor: theme.palette.error.light,
-        color: "white",
+        backgroundColor: '#f8dbdb',
+        color: "dark-red",
         borderRadius: "50%",
         "&:hover": {
-            backgroundColor: theme.palette.error.dark,
+            backgroundColor: '#f8dbdb',
+        },
+    }));
+
+    const CommonDay = styled(PickersDay)(({ theme }) => ({
+        backgroundColor: "#dbf7db",
+        color: "dark-green",
+        borderRadius: "50%",
+        "&:hover": {
+            backgroundColor: "#dbf7db"
         },
     }));
 
@@ -54,6 +70,9 @@ export default function ReservationCalendar() {
     });
 
     const renderCustomDay = (day, _selectedDates, pickersDayProps) => {
+        if (day.outsideCurrentMonth) {
+            return <PickersDay {...pickersDayProps} day={day.day} disabled={false} today={day.today} selected={day.selected} style={{"color":"white", "backgroundColor":"white"}} />;
+        }
         const handleDaySelect = (day) => {
             const sDay = new Date(day).getDate();
             const sMonth = new Date(day).getMonth();
@@ -72,11 +91,15 @@ export default function ReservationCalendar() {
             else setConsultar(sUser);
 
         }
-        return isReserved(day) ? (
-            <ReservedDay {...pickersDayProps} day={day.day} disabled={day.disabled} today={day.today} selected={day.selected} onDaySelect={handleDaySelect} />
-        ) : (
-            <PickersDay {...pickersDayProps} day={day.day} disabled={day.disabled} today={day.today} selected={day.selected} />
-        );
+        if (isReserved(day)) {
+            if (isCommon(day)) {
+                return <CommonDay {...pickersDayProps} day={day.day} disabled={day.disabled} today={day.today} selected={day.selected} onDaySelect={handleDaySelect} />;
+            } else {
+                return <ReservedDay {...pickersDayProps} day={day.day} disabled={day.disabled} today={day.today} selected={day.selected} onDaySelect={handleDaySelect} />;
+            }
+        } else {
+            return <PickersDay {...pickersDayProps} day={day.day} disabled={day.disabled} today={day.today} selected={day.selected} />;
+        }
     };
 
     return (
