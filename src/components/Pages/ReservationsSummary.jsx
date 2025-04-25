@@ -57,7 +57,7 @@ export default function ReservationsSummary() {
             {summary.length === 0 ? (
                 <p style={{paddingTop:"95px"}} className="text-secondary text-center">Cargando datos...</p>
             ) : (
-                <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", paddingTop:"90px", paddingBottom:"20px" }}>
+                <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", paddingTop:"95px", paddingBottom:"20px" }}>
                     {summary.map(({ name, adults, kids, shiftId }, index) => (
                         <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={index}>
                             <div className="cursor-pointer flex-grow-1" >

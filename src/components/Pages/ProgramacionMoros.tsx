@@ -5,6 +5,7 @@ export default function ProgramacionMoros() {
     
     window.scrollTo(0, 0);
     const imagenes = [
+        "/docs/jueves.png",
         "/docs/viernes.png",
         "/docs/sabado.png",
         "/docs/domingo.png",
