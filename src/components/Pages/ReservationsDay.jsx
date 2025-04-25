@@ -114,7 +114,7 @@ export default function ReservationsDay() {
   return (
 
     <div>
-      {Header(Paths.DAY_USER_SELECTION, "Días reservados")}
+      {Header(Paths.INDEX, "Días reservados")}
 
       {/* Lista de reservas */}
       <div style={{ paddingTop: "95px" }}>

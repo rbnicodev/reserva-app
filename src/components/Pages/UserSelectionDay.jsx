@@ -25,8 +25,10 @@ export default function UserSelectionDay() {
 
   return (
     <div>
-      {Header(Paths.INDEX, "Reservar Día")}
-      {ListUsers(users, Paths.DAY_RESERVATION)}
+      {Header(null, "Reservar Día")}
+      <div style={{ paddingTop: "95px", paddingBottom: "20px" }}>
+        {ListUsers(users, Paths.DAY_RESERVATION)}
+      </div>
     </div>
   );
 }
