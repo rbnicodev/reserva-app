@@ -117,7 +117,7 @@ export default function ReservationsDay() {
       {Header(Paths.DAY_USER_SELECTION, "Días reservados")}
 
       {/* Lista de reservas */}
-      <div style={{ paddingTop: "90px" }}>
+      <div style={{ paddingTop: "95px" }}>
         {reservations.length === 0 ? (
           <p className="text-secondary text-center">No hay reservas todavía.</p>
         ) : (

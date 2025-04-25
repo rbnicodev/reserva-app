@@ -72,7 +72,7 @@ export default function Reservations() {
     <div >
 
       {Header(Paths.TABLE_USER_SELECTION, "Tus Reservas")}
-      <div style={{ width: "auto", paddingTop: "90px", paddingBottom: "20px" }}>
+      <div style={{ width: "auto", paddingTop: "95px", paddingBottom: "20px" }}>
         {reservations && reservations.length > 0 && (
           <p className="text-secondary">
             Total: {reservations.reduce((acc, reservation) => {
