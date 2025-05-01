@@ -21,6 +21,9 @@ export default function ReservationsDetail() {
     const [shift, setShift] = useState([]);
     const [users, setUsers] = useState([]);
 
+    const countPlates = (elemento, array) => {
+        return array.reduce((contador, actual) => actual === elemento ? contador + 1 : contador, 0);
+    }
 
     useEffect(() => {
         if (!shiftId) return;
@@ -32,7 +35,6 @@ export default function ReservationsDetail() {
                     id: doc.id,
                     ...doc.data()
                 })));
-
 
             // Cargar precios
             const pricesData = await allPrices();
@@ -54,8 +56,8 @@ export default function ReservationsDetail() {
                 name: doc.data().name ?? "Sin nombre"
             })));
         }
-        
-    fetchData();
+
+        fetchData();
     }, [shiftId]);
     return (
         <div >
@@ -81,14 +83,28 @@ export default function ReservationsDetail() {
                     ) : (
                         <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
                             {reservations.map((reservation) => (
-                                <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
-                                    <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?reservationId=${reservation.id}&userId=${userId}`)}>
-                                        <h5 className="card-title text-dark">{users.find(u => u.id === reservation.userId)?.name || "Desconocido"}</h5>
-                                        <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.kids !== 1 ? "s" : ""}</p>
+                                <div className="card shadow-sm p-3">
+                                    <div className=" d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
+                                        <div className="cursor-pointer flex-grow-1">
+                                            <h5 className="card-title text-dark">{users.find(u => u.id === reservation.userId)?.name || "Desconocido"}</h5>
+                                            <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.kids !== 1 ? "s" : ""}</p>
+
+                                        </div>
                                         <p className="card-text text-secondary">
                                             {prices.find(p => p.id === menus.find(m => m.shiftId === shiftId)?.priceId)?.amount * reservation.guests}€
                                         </p>
                                     </div>
+
+                                    {!!reservation.mainPlates && reservation.mainPlates.length > 0 ? (
+                                        <div className="card-footer text-center mt-4">
+                                            {!!reservation.mainPlates ? [...new Set(reservation.mainPlates)].map(p => (
+                                                <div className="d-flex flex-row justify-content-between mb-0 mt-0">
+                                                    <div className="card-text text-muted">{p}</div><div className=" card-text">{countPlates(p, reservation.mainPlates)}</div>
+                                                </div>
+                                            )) : <></>
+                                            }
+                                        </div>
+                                    ) : <></>}
                                 </div>
                             ))}
                         </div>

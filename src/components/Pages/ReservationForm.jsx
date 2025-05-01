@@ -8,25 +8,36 @@ import Header from ".././Header";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
-  useEffect(() => { window.scrollTo(0, 0); }, []);
   const location = useLocation();
-
   const searchParams = new URLSearchParams(location.search);
   const userId = searchParams.get("userId");
   const reservationId = searchParams.get("reservationId");
 
   const [reservation, setReservation] = useState({});
-
   const [availableShifts, setAvailableShifts] = useState([]);
   const [currentShiftName, setCurrentShiftName] = useState("");
-
-  // Estado para controlar el cuadro de diálogo
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isEdit, setIsEdit] = useState(false);
   const [originalGuests, setOriginalGuests] = useState(0);
   const [menus, setMenus] = useState([]);
   const [menu, setMenu] = useState({});
+  const [mainPlatesSelection, setMainPlatesSelection] = useState([]);
+
+  const totalSelectedPlates = mainPlatesSelection.reduce((a, b) => a + b, 0);
+
+  const updatePlateCount = (index, delta) => {
+    setMainPlatesSelection((prev) => {
+      const newCounts = [...prev];
+      const newTotal = newCounts.reduce((sum, val, i) => sum + (i === index ? val + delta : val), 0);
+      if (newTotal >= 0 && newTotal <= (reservation.guests || 0)) {
+        newCounts[index] = Math.max(0, newCounts[index] + delta);
+      }
+      return newCounts;
+    });
+  };
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
     if (!userId) return;
@@ -35,16 +46,41 @@ export default function ReservationForm() {
       try {
         const tempMenus = await allMenus();
         setMenus(tempMenus);
+
+        let reservationData = null;
+        if (reservationId) {
+          const docSnap = await getDoc(doc(db, "reservations", reservationId));
+          if (docSnap.exists()) {
+            reservationData = docSnap.data();
+            setIsEdit(true);
+            setReservation(reservationData);
+            setOriginalGuests(reservationData.guests || 0);
+
+            const menuForShift = tempMenus?.find(m => m.shiftId === reservationData.shiftId);
+            if (menuForShift) setMenu(menuForShift);
+          }
+        } else {
+          reservationData = {
+            guests: 1,
+            kids: 0,
+            shiftId: "",
+            userId: userId || "",
+          };
+          setReservation(reservationData);
+        }
+
         const reservationsQuery = query(collection(db, "reservations"), where("userId", "==", userId));
         const reservationsSnapshot = await getDocs(reservationsQuery);
         const reservedShifts = new Set(reservationsSnapshot.docs.map((doc) => doc.data().shiftId));
 
         const shiftsSnapshot = await getDocs(collection(db, "shifts"));
-        const allShifts = await Promise.all(
+        const shifts = await Promise.all(
           shiftsSnapshot.docs.map(async (doc) => {
             const shiftId = doc.id;
-            let remainingSeats = (await restReservations(shiftId)) ?? 0; // Manejo de error
-            if (reservationId) remainingSeats += reservation.guests;
+            let remainingSeats = (await restReservations(shiftId)) ?? 0;
+            if (reservationId && reservationData?.shiftId === shiftId) {
+              remainingSeats += reservationData.guests;
+            }
             return {
               id: shiftId,
               name: doc.data().name,
@@ -54,37 +90,15 @@ export default function ReservationForm() {
           })
         );
 
-        if (reservationId) {
-          setIsEdit(true);
-          const docRef = doc(db, "reservations", reservationId);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const reservationData = docSnap.data();
-            setReservation(reservationData);
-            const tempMenu = tempMenus?.find(m => m.shiftId === reservationData.shiftId);
-            setMenu(tempMenu);
-            setOriginalGuests(reservationData.guests || 0);
+        setAvailableShifts(
+          shifts.filter((shift) => !reservedShifts.has(shift.id) || (reservationData?.shiftId === shift.id))
+            .sort((a, b) => a.order - b.order)
+        );
 
-            const shift = allShifts.find((s) => s.id === reservationData.shiftId);
-            if (shift) {
-              setCurrentShiftName(shift.name);
-            }
-
-            // 🔥 Asegurar que shiftId no sea vacío
-            if (!reservationData.shiftId && shift) {
-              setReservation((prev) => ({ ...prev, shiftId: shift.id }));
-            }
-          }
-        } else {
-          setReservation({
-            guests: 1,
-            kids: 0,
-            shiftId: "",
-            userId: userId || "",
-          });
+        if (reservationId && reservationData) {
+          const shift = shifts.find((s) => s.id === reservationData.shiftId);
+          if (shift) setCurrentShiftName(shift.name);
         }
-
-        setAvailableShifts(allShifts.filter((shift) => !reservedShifts.has(shift.id)).sort((a, b) => a.order - b.order));
       } catch (error) {
         console.error("Error al obtener los datos:", error);
       }
@@ -93,13 +107,30 @@ export default function ReservationForm() {
     fetchData();
   }, [userId, reservationId]);
 
+  useEffect(() => {
+    if (menu?.mainPlate && menu.mainPlate.includes("|")) {
+      const options = menu.mainPlate.split("|").map(p => p.trim());
+      const counts = Array(options.length).fill(0);
+
+      if (reservation.mainPlates && Array.isArray(reservation.mainPlates)) {
+        reservation.mainPlates.forEach((p) => {
+          const idx = options.indexOf(p);
+          if (idx >= 0) counts[idx]++;
+        });
+      }
+
+      setMainPlatesSelection(counts);
+    } else {
+      setMainPlatesSelection([]);
+    }
+  }, [menu, reservation.mainPlates]);
+
   const saveReservation = async () => {
     if (!userId) {
       console.error("Sin userId");
       return;
     }
     if (!reservation.shiftId) {
-      console.error("Sin shiftId");
       setErrorMessage("Debe indicarse un turno");
       setErrorDialogOpen(true);
       return;
@@ -115,20 +146,35 @@ export default function ReservationForm() {
     let remainingSeats = await restReservations(reservation.shiftId);
     if (isEdit) remainingSeats += (originalGuests || 0);
 
-    const totalPeople = reservation.guests;
-
     if (isNaN(reservation.guests) || reservation.guests < 1) {
       setErrorMessage("Debe indicarse al menos una persona");
       setErrorDialogOpen(true);
       return;
     }
     if (reservation.guests > remainingSeats) {
-      setErrorMessage("No hay suficientes plazas disponibles para esta reserva. Quedan " + remainingSeats + " plazas");
+      setErrorMessage(`No hay suficientes plazas disponibles. Quedan ${remainingSeats}`);
       setErrorDialogOpen(true);
       return;
     }
 
     try {
+      if (mainPlatesSelection.length > 0 && menu.mainPlate.includes("|")) {
+        const options = menu.mainPlate.split("|").map(p => p.trim());
+        reservation.mainPlates = [];
+        mainPlatesSelection.forEach((count, idx) => {
+          for (let i = 0; i < count; i++) {
+            reservation.mainPlates.push(options[idx]);
+          }
+        });
+        
+        
+        if (reservation.mainPlates.length < reservation.guests) {
+          setErrorMessage("Deben indicarse los platos principales");
+          setErrorDialogOpen(true);
+          return;
+        }
+      }
+
       if (reservationId) {
         await setDoc(doc(db, "reservations", reservationId), reservation);
       } else {
@@ -211,6 +257,26 @@ export default function ReservationForm() {
                 </select>
               )}
             </div>
+
+
+            {menu?.mainPlate?.includes("|") && mainPlatesSelection.length > 0 && (
+              <div className="card shadow-sm p-3 mt-0 mb-3">
+                <div className="card-title text-secondary">
+                  <h5><strong>Selecciona los platos principales</strong></h5>
+                  <p className="text-secondary">Platos seleccionados: {totalSelectedPlates} / {reservation.guests}</p>
+                </div>
+                {menu.mainPlate.split("|").map((plate, index) => (
+                  <div key={index} className="d-flex justify-content-between align-items-center mb-2">
+                    <span>{plate.trim()}</span>
+                    <div>
+                      <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => updatePlateCount(index, -1)}>-</button>
+                      <span className="mx-2">{mainPlatesSelection[index]}</span>
+                      <button className="btn btn-sm btn-outline-secondary" onClick={() => updatePlateCount(index, 1)}>+</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <button className="btn btn-primary w-100" onClick={saveReservation}>
               Guardar
