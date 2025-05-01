@@ -18,6 +18,7 @@ export default function Index() {
                     <button type="button" className="btn btn-light py-4 my-2" onClick={() => navigate(Paths.RESERVATION_CALENDAR)}>Calendario reservas</button>
                     <button type="button" className="btn btn-light py-4 my-2" onClick={() => navigate(Paths.TABLE_USER_SELECTION)}>Reservar Mesa M&C</button>
                     <button type="button" className="btn btn-light py-4 my-2" onClick={() => navigate(Paths.TABLE_RESERVATIONS_SUMMARY)}>Resumen Mesas M&C</button>
+                    <button type="button" className="btn btn-light py-4 my-2" onClick={() => navigate(Paths.PAYMENTS_ACCESS)}>Pagos</button>
                 </div>
 
             </div>

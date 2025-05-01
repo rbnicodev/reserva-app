@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, deleteField, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { db } from "../firebase";
 import type { GlobalSettings } from "../models/GlobalSettings";
 import type { Shift } from "../models/Shift";
@@ -6,6 +6,8 @@ import type { Menu } from "../models/Menu";
 import type { Price } from "../models/Price";
 import type { Reservation } from "../models/Reservation";
 import type { BoardEntry } from "../models/BoardEntry";
+import { encrypt } from "./cryptoUtils";
+import type { PayUser } from "../models/User";
 
 // Función para obtener las configuraciones globales desde Firestore
 export const fetchGlobalSettings = async (): Promise<GlobalSettings | null> => {
@@ -116,4 +118,115 @@ export const allEntries = async (): Promise<BoardEntry[]> => {
       imageUrl: data.imageUrl,
     } as BoardEntry;
   });
+};
+
+export const setPassword = async (payUser: string, pass: string): Promise<boolean> => {
+  try {
+    const encryptedPass = encrypt(pass);
+
+    const userRef = doc(db, "payUsers", payUser);
+    const snapShot = await getDoc(userRef);
+    if (!snapShot) {
+      console.error("Usuario no encontrado");
+      return false;
+    }
+
+    await setDoc(doc(db, "payUsers", snapShot.id), {
+      ...snapShot.data(),
+      password: encryptedPass
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error en setPassword:", error);
+    return false;
+  }
+};
+
+export const resetPassword = async (userId: string): Promise<boolean> => {
+  try {
+      await updateDoc(doc(db, "payUsers", userId), {
+          password: deleteField()
+      });
+      return true;
+  } catch (error) {
+      console.error("Error reseteando la contraseña:", error);
+      return false;
+  }
+};
+
+export const findPassByUser = async (payUser: string): Promise<string | null> => {
+  try {
+    const userRef = doc(db, "payUsers", payUser);
+    const snapShot = await getDoc(userRef);
+
+    if (!snapShot) {
+      console.error("Usuario no encontrado");
+      return null;
+    }
+
+    const data: PayUser = {
+      ...snapShot.data()
+    };
+    return data.password || null;
+  } catch (error) {
+    console.error("Error en findPassByUser:", error);
+    return null;
+  }
+};
+
+export const loggin = async (payUser: string, pass: string): Promise<boolean> => {
+  try {
+
+    const encryptedPass = encrypt(pass);
+    const storedPass = await findPassByUser(payUser);
+
+    if (!storedPass) {
+      console.error("Contraseña no encontrada");
+      return false;
+    }
+
+    return storedPass === encryptedPass;
+  } catch (error) {
+    console.error("Error en loggin:", error);
+    return false;
+  }
+};
+export const hasPayAccess = async (payUser: string): Promise<boolean> => {
+  try {
+    const userRef = doc(db, "payUsers", payUser);
+    const snapShot = await getDoc(userRef);
+
+    if (!snapShot) {
+      console.error("Usuario no encontrado en payUsers");
+      return false;
+    }
+
+    const data = snapShot.data();
+    
+    return !!data?.password;
+  } catch (error) {
+    console.error("Error en hasAccess:", error);
+    return false;
+  }
+};
+
+export const canPayAccess = async (userId: string): Promise<boolean> => {
+
+
+  if (!userId) {
+    console.error("Error: El userId es undefined o vacío");
+    return false;
+  }
+
+  try {
+    const payAccessRef = collection(db, "payAcces");
+    const q = query(payAccessRef, where("payUser", "==", userId));
+
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+  } catch (error) {
+    console.error("Error en canPayAccess:", error);
+    return false;
+  }
 };

@@ -9,5 +9,7 @@ export enum Paths {
     TABLE_RESERVATIONS_SUMMARY = `/table_reservations_summary`,
     TABLE_RESERVATIONS_DETAIL = `/table_reservations_detail`,
     BULLETIN_BOARD = `/bulletin_board`,
-    PROGRAMACION_MOROS = `/pogramacion_moros`
+    PROGRAMACION_MOROS = `/pogramacion_moros`,
+    PAYMENTS_ACCESS = `/payments-loggin`,
+    PAYMENTS = `/payments`
 }

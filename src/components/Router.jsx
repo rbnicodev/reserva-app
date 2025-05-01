@@ -12,6 +12,8 @@ import ReservationsDay from "./Pages/ReservationsDay.jsx";
 import ReservationsDetail from "./Pages/ReservationsDetail.jsx";
 import Board from "./Pages/Board.tsx";
 import ProgramacionMoros from "./Pages/ProgramacionMoros.tsx";
+import PayUserAccess from "./Pages/PayUsersAcces.tsx";
+import Payments from "./Pages/Payments.tsx";
 
 export default function Router() {
   return (
@@ -29,6 +31,8 @@ export default function Router() {
           <Route path={Paths.TABLE_RESERVATIONS_DETAIL} element={<ReservationsDetail />} />
           <Route path={Paths.BULLETIN_BOARD} element={<Board />} />
           <Route path={Paths.PROGRAMACION_MOROS} element={<ProgramacionMoros />} />
+          <Route path={Paths.PAYMENTS_ACCESS} element={<PayUserAccess />} />
+          <Route path={Paths.PAYMENTS} element={<Payments />} />
         </Routes>
       </Layout>
     </BrowserRouter>
