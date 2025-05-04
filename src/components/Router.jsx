@@ -34,8 +34,8 @@ export default function Router() {
           <Route path={Paths.TABLE_RESERVATIONS_DETAIL} element={<ReservationsDetail />} />
           <Route path={Paths.BULLETIN_BOARD} element={<Board />} />
           <Route path={Paths.PROGRAMACION_MOROS} element={<ProgramacionMoros />} />
-          <Route path={Paths.PAYMENTS_ACCESS} element={!!payUser ? (<Payments payUser={payUser} setPayUser={setPayUser}/>): (<PayUserAccess setPayUser={setPayUser}/>)}/>
-          <Route path={Paths.PAYMENTS} element={!!payUser ? (<Payments payUser={payUser} setPayUser={setPayUser}/>): (<PayUserAccess setPayUser={setPayUser}/>)}/>
+          <Route path={Paths.PAYMENTS_ACCESS} element={!!payUser ? (<Navigate to={Paths.PAYMENTS}/>): (<PayUserAccess setPayUser={setPayUser}/>)}/>
+          <Route path={Paths.PAYMENTS} element={!!payUser ? (<Payments payUser={payUser} setPayUser={setPayUser}/>): (<Navigate to={Paths.PAYMENTS_ACCESS}/>)}/>
         </Routes>
       </Layout>
     </BrowserRouter>
