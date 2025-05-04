@@ -20,6 +20,9 @@ export default function Reservations() {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [menus, setMenus] = useState([]);
   const [prices, setPrices] = useState([]);
+  const countPlates = (elemento, array) => {
+    return array.reduce((contador, actual) => actual === elemento ? contador + 1 : contador, 0);
+  }
 
   // Cargar reservas y turnos desde Firebase
   useEffect(() => {
@@ -92,20 +95,32 @@ export default function Reservations() {
           ) : (
             <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
               {reservations.map((reservation) => (
-                <div className="card shadow-sm p-3 d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
-                  <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?reservationId=${reservation.id}&userId=${userId}`)}>
-                    <h5 className="card-title text-dark">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
-                    <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.kids !== 1 ? "s" : ""}</p>
-                    <p className="card-text text-secondary">
-                      {prices.find(p => p.id === menus.find(m => m.shiftId === reservation.shiftId).priceId).amount * reservation.guests}€
-                    </p>
+                <div className="card shadow-sm p-3">
+                  <div className="d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
+                    <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?reservationId=${reservation.id}&userId=${userId}`)}>
+                      <h5 className="card-title text-dark">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
+                      <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.kids !== 1 ? "s" : ""}</p>
+                      <p className="card-text text-secondary">
+                        {prices.find(p => p.id === menus.find(m => m.shiftId === reservation.shiftId).priceId).amount * reservation.guests}€
+                      </p>
+                    </div>
+
+                    {/* Botón de eliminar */}
+                    <button className="btn btn-sm" onClick={() => setConfirmDeleteId(reservation.id)}>
+                      🗑️
+                    </button>
+
                   </div>
-
-                  {/* Botón de eliminar */}
-                  <button className="btn btn-sm" onClick={() => setConfirmDeleteId(reservation.id)}>
-                    🗑️
-                  </button>
-
+                  {!!reservation.mainPlates && reservation.mainPlates.length > 0 ? (
+                    <div className="card-footer text-center mt-4">
+                      {!!reservation.mainPlates ? [...new Set(reservation.mainPlates)].map(p => (
+                        <div className="d-flex flex-row justify-content-between mb-0 mt-0">
+                          <div className="text-muted">{p}</div><div className="text-muted">{countPlates(p, reservation.mainPlates)}</div>
+                        </div>
+                      )) : <></>
+                      }
+                    </div>
+                  ) : <></>}
                 </div>
               ))}
             </div>
