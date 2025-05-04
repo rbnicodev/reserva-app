@@ -2,6 +2,8 @@ export interface Payment {
     id?: string;
     name?: string;
     isCouple?: boolean;
+    payUserCreator?: string;
+    payUsersAllowed?: string[];
     createDate?: string; //Date
     deadLine?: string //Date
 }

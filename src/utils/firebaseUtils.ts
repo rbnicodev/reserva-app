@@ -1,4 +1,4 @@
-import { collection, deleteField, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { collection, deleteField, doc, getDoc, getDocs, or, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { db } from "../firebase";
 import type { GlobalSettings } from "../models/GlobalSettings";
 import type { Shift } from "../models/Shift";
@@ -8,6 +8,7 @@ import type { Reservation } from "../models/Reservation";
 import type { BoardEntry } from "../models/BoardEntry";
 import { encrypt } from "./cryptoUtils";
 import type { PayUser } from "../models/User";
+import type { Payment } from "../models/Payment";
 
 // Función para obtener las configuraciones globales desde Firestore
 export const fetchGlobalSettings = async (): Promise<GlobalSettings | null> => {
@@ -228,5 +229,37 @@ export const canPayAccess = async (userId: string): Promise<boolean> => {
   } catch (error) {
     console.error("Error en canPayAccess:", error);
     return false;
+  }
+};
+
+
+export const findPaymentsByUser = async (user: string): Promise<Payment[]> => {
+  try {
+    const paymentsRef = collection(db, "payments");
+
+    const creatorQuery = query(paymentsRef, where("payUserCreator", "==", user));
+    const allowedQuery = query(paymentsRef, where("payUsersAllowed", "array-contains", user));
+
+    const [creatorSnapshot, allowedSnapshot] = await Promise.all([
+      getDocs(creatorQuery),
+      getDocs(allowedQuery)
+    ]);
+
+    const paymentsMap = new Map<string, Payment>();
+
+    creatorSnapshot.forEach(doc => {
+      paymentsMap.set(doc.id, { id: doc.id, ...(doc.data() as Payment) });
+    });
+
+    allowedSnapshot.forEach(doc => {
+      if (!paymentsMap.has(doc.id)) {
+        paymentsMap.set(doc.id, { id: doc.id, ...(doc.data() as Payment) });
+      }
+    });
+
+    return Array.from(paymentsMap.values());
+  } catch (error) {
+    console.error("Error en findPaymentsByUser:", error);
+    return [];
   }
 };
