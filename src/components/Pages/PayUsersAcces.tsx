@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import React, { useEffect, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -7,7 +7,11 @@ import Header from "../Header";
 import { canPayAccess, hasPayAccess, setPassword, loggin, resetPassword } from "../../utils/firebaseUtils";
 import type { PayUser } from "../../models/User";
 
-export default function PayUserAccess() {
+type Props = {
+    setPayUser: React.Dispatch<React.SetStateAction<PayUser | null>>;
+}
+
+export default function PayUserAccess({setPayUser}: Props) {
     const [users, setUsers] = useState<PayUser[]>([]);
     const [selectedUserId, setSelectedUserId] = useState("");
     const [selectedUserName, setSelectedUserName] = useState("");
@@ -85,27 +89,13 @@ export default function PayUserAccess() {
         }
     };
 
-    const handleResetPassword = async () => {
-        if (!selectedUserName) return;
-
-        const confirmed = window.confirm("¿Estás seguro de que quieres restablecer la contraseña?");
-        if (confirmed) {
-            const success = await resetPassword(selectedUserName);
-            if (success) {
-                window.location.reload(); // recarga para que se pueda establecer nueva
-            } else {
-                alert("Error al restablecer la contraseña.");
-            }
-        }
-    };
-
 
     const handleLoggin = async () => {
         if (!password || !selectedUserName) return;
 
         const success = await loggin(selectedUserName, password);
         if (success) {
-            navigate(`${Paths.PAYMENTS}`);
+            setPayUser({name: selectedUserName});
         } else {
             setError("Contraseña incorrecta.");
         }
