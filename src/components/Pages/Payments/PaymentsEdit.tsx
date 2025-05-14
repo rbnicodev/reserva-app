@@ -137,18 +137,34 @@ export default function PaymentUsersList(props: PaymentsProps) {
 
         try {
             await savePaymentForUser(p);
+            toggleCollapse(userId);
         } catch (error) {
             console.error("Error al guardar el pago:", error);
         }
     };
 
     const toggleCollapse = (userId: string) => {
-        setCollapsedStates((prev) => ({
-            ...prev,
-            [userId]: !prev[userId],
-        }));
-    };
+        setCollapsedStates((prev) => {
+            const isOpen = !prev[userId]; // Si no está colapsado, está abierto
 
+            if (isOpen) {
+                // Si ya estaba abierta, colapsar todo
+                const newStates: Record<string, boolean> = {};
+                Object.keys(prev).forEach((id) => {
+                    newStates[id] = true;
+                });
+                return newStates;
+            } else {
+                // Si estaba cerrada, colapsar todo excepto esta
+                const newStates: Record<string, boolean> = {};
+                Object.keys(prev).forEach((id) => {
+                    newStates[id] = true;
+                });
+                newStates[userId] = false; // Abrir solo esta
+                return newStates;
+            }
+        });
+    };
 
     if (loading) {
         return (
@@ -173,7 +189,7 @@ export default function PaymentUsersList(props: PaymentsProps) {
 
                         return (
                             <div className="col-md-4 col-sm-6 col-12 mb-2" key={userId}>
-                                <div className="card h-100" style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#e6e6e6' }}>
+                                <div className="card h-100" style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f1f1f1' }}>
                                     <div className="card-body">
                                         <h5 className="card-title d-flex justify-content-between"
                                             onClick={() => toggleCollapse(userId)}>
