@@ -21,6 +21,7 @@
     "@mui/x-date-pickers": "^7.28.0",
     "astro": "^5.7.4",
     "bootstrap": "^5.3.3",
+    "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "dayjs-plugin-utc": "^0.1.2",
@@ -32,6 +33,7 @@
     "react-router-dom": "^7.1.5"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3"
   }
