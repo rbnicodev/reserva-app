@@ -45,42 +45,46 @@ export default function Payments({ payUser, setPayUser }: Props) {
         loadPayments();
     }, [payUser]);
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [page]);
+
     return (
         <div>
-                {page === Pages.LIST ? (
-                    <PaymentsList
-                        setPayUser={setPayUser}
-                        payUser={payUser}
-                        page={page}
-                        setPage={setPage}
-                        payments={payments}
-                        setPayments={setPayments}
-                        payment={payment}
-                        setPayment={setPayment}
-                    />
-                ) : page === Pages.ADD ? (
-                    <PaymentsAdd
-                        setPayUser={setPayUser}
-                        payUser={payUser}
-                        page={page}
-                        setPage={setPage}
-                        payments={payments}
-                        setPayments={setPayments}
-                        payment={payment}
-                        setPayment={setPayment}
-                    />
-                ) : page === Pages.EDIT ? (
-                    <PaymentsEdit
-                        setPayUser={setPayUser}
-                        payUser={payUser}
-                        page={page}
-                        setPage={setPage}
-                        payments={payments}
-                        setPayments={setPayments}
-                        payment={payment}
-                        setPayment={setPayment}
-                    />
-                ) : null}
-            </div>
+            {page === Pages.LIST ? (
+                <PaymentsList
+                    setPayUser={setPayUser}
+                    payUser={payUser}
+                    page={page}
+                    setPage={setPage}
+                    payments={payments}
+                    setPayments={setPayments}
+                    payment={payment}
+                    setPayment={setPayment}
+                />
+            ) : page === Pages.ADD ? (
+                <PaymentsAdd
+                    setPayUser={setPayUser}
+                    payUser={payUser}
+                    page={page}
+                    setPage={setPage}
+                    payments={payments}
+                    setPayments={setPayments}
+                    payment={payment}
+                    setPayment={setPayment}
+                />
+            ) : page === Pages.EDIT ? (
+                <PaymentsEdit
+                    setPayUser={setPayUser}
+                    payUser={payUser}
+                    page={page}
+                    setPage={setPage}
+                    payments={payments}
+                    setPayments={setPayments}
+                    payment={payment}
+                    setPayment={setPayment}
+                />
+            ) : null}
+        </div>
     );
 }

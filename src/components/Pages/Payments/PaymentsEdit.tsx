@@ -25,6 +25,8 @@ export default function PaymentUsersList(props: PaymentsProps) {
     const [paymentForUsers, setPaymentForUsers] = useState<PaymentForUser[]>([]);
     const [inputValues, setInputValues] = useState<{ [userId: string]: string }>({});
     const [collapsedStates, setCollapsedStates] = useState<{ [userId: string]: boolean }>({});
+    const [tempValue, setTempValue] = useState<string|undefined>();
+    const [confirmeSave, setConfirmeSave] = useState<PaymentForUser|null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -111,13 +113,20 @@ export default function PaymentUsersList(props: PaymentsProps) {
     };
 
     const handlePaidBlur = async (p: PaymentForUser, userId: string) => {
+        const temporalValue = parseFloat(tempValue ?? "0");
+
         const rawInput = inputValues[userId]?.replace(",", ".").trim() || "0";
         let parsed = parseFloat(rawInput);
         if (isNaN(parsed)) parsed = 0;
+        const toSave = parsed <= p.amount && temporalValue !== parseFloat(rawInput);
         if (parsed > p.amount) {
             alert("La cantidad pagada no puede ser superior al monto del pago");
-            parsed = 0;
-        }
+            if (!!tempValue) {
+                parsed = parseFloat(tempValue);
+                setTempValue(undefined);
+            }
+        } else 
+            setTempValue(parsed.toFixed(2));
 
         p.paid = parsed;
 
@@ -135,13 +144,18 @@ export default function PaymentUsersList(props: PaymentsProps) {
             [userId]: parsed.toFixed(2),
         }));
 
+        if (toSave)setConfirmeSave(p);
+    };
+
+    const save = async (p: PaymentForUser) => {
         try {
             await savePaymentForUser(p);
-            toggleCollapse(userId);
-        } catch (error) {
+            setConfirmeSave(null);
+            setTempValue(undefined);
+        } catch(error) {
             console.error("Error al guardar el pago:", error);
         }
-    };
+    }
 
     const toggleCollapse = (userId: string) => {
         setCollapsedStates((prev) => {
@@ -224,7 +238,8 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                                         value={inputValues[userId] ?? p.paid.toFixed(2)}
                                                         onChange={(e) => handlePaidChange(e, userId)}
                                                         onBlur={() => handlePaidBlur(p, userId)}
-                                                        onFocus={() => {
+                                                        onFocus={(e) => {
+                                                            setTempValue(e.target.value);
                                                             const value = p.paid ?? 0;
                                                             const isWhole = value % 1 === 0;
                                                             setInputValues((prev) => ({
@@ -253,6 +268,26 @@ export default function PaymentUsersList(props: PaymentsProps) {
 
                 </div>
             </div>
+
+            {confirmeSave && (
+                    <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)", marginTop: "66px" }}>
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Confirmar pago</h5>
+                                    <button type="button" className="btn-close" onClick={() => setConfirmeSave(null)}></button>
+                                </div>
+                                <div className="modal-body">
+                                    <p>¿Es correcto el pago que ha indicado de {tempValue}€?</p>
+                                </div>
+                                <div className="modal-footer">
+                                    <button className="btn btn-secondary" onClick={() => setConfirmeSave(null)}>Cancelar</button>
+                                    <button className="btn btn-primary" onClick={() => save(confirmeSave)}>Guardar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
         </div>
     );
 }

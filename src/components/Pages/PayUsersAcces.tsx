@@ -12,6 +12,7 @@ type Props = {
 }
 
 export default function PayUserAccess({setPayUser}: Props) {
+    window.scrollTo(0, 0);
     const [users, setUsers] = useState<PayUser[]>([]);
     const [selectedUserId, setSelectedUserId] = useState("");
     const [selectedUserName, setSelectedUserName] = useState("");
