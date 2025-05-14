@@ -23,6 +23,12 @@ export default function PaymentUsersList(props: PaymentsProps) {
     const [users, setUsers] = useState<User[]>([]);
     const [paymentForUsers, setPaymentForUsers] = useState<PaymentForUser[]>([]);
     const [collapsedStates, setCollapsedStates] = useState<{ [key: number]: boolean }>([]);
+    const [inputValues, setInputValues] = useState<string[]>([]);
+
+    useEffect(() => {
+        setInputValues(paymentForUsers.map((p) => p.paid.toFixed(2)));
+    }, [paymentForUsers]);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -93,52 +99,56 @@ export default function PaymentUsersList(props: PaymentsProps) {
         }
     }, [props.payment]);
 
-    const handlePaidChange = (e: React.ChangeEvent<HTMLInputElement>, idx: number, p: PaymentForUser) => {
-        let rawValue = e.target.value;
-        if (/^0\d+/.test(rawValue)) {
-            rawValue = String(parseFloat(rawValue));
-            e.target.value = rawValue;
-        }
-        const value = parseFloat(rawValue) || 0;
-        p.paid = value;
-        setPaymentForUsers((prev) => {
+    const handlePaidChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        idx: number
+    ) => {
+        let rawValue = e.target.value.replace(",", "."); // Convertir coma a punto
+
+        // Solo permitir formato numérico válido
+        if (!/^(\d+)?([.]\d{0,2})?$/.test(rawValue) && rawValue !== "") return;
+
+        setInputValues((prev) => {
             const updated = [...prev];
-            updated[idx].paid = value;
+            updated[idx] = rawValue;
             return updated;
         });
     };
 
     const handlePaidBlur = async (p: PaymentForUser, idx: number) => {
-        {
-            const input = document.getElementById(`collapseCard-${idx}`)?.querySelector('input') as HTMLInputElement | null;
-            if (input && input.value.trim() === "") {
-                input.value = "0";
-                p.paid = 0;
-            } else {
-                if (!!input) {
-                    const value = parseFloat(input.value);
-                    if (value > p.amount) {
-                        input.value = "0";
-                        p.paid = 0;
-                        alert("La cantidad pagada no puede ser superior al monto del pago");
-                        setPaymentForUsers((prev) => {
-                            const updated = [...prev];
-                            updated[idx].paid = parseFloat(input.value);
-                            return updated;
-                        });
-                    } else {
-                        input.value = value.toFixed(2);
-                    }
-                }
-                p.paid = p.paid ?? 0;
-            }
-            try {
-                await savePaymentForUser(p);
-            } catch (error) {
-                console.error("Error al guardar el pago:", error);
-            }
+        const rawInput = inputValues[idx]?.replace(",", ".").trim() || "0";
+        let parsed = parseFloat(rawInput);
+
+        if (isNaN(parsed)) parsed = 0;
+
+        if (parsed > p.amount) {
+            alert("La cantidad pagada no puede ser superior al monto del pago");
+            parsed = 0;
         }
-    }
+
+        p.paid = parsed;
+
+        setPaymentForUsers((prev) => {
+            const updated = [...prev];
+            updated[idx].paid = parsed;
+            return updated;
+        });
+
+        setInputValues((prev) => {
+            const updated = [...prev];
+            updated[idx] = parsed.toFixed(2);
+            return updated;
+        });
+
+        try {
+            await savePaymentForUser(p);
+        } catch (error) {
+            console.error("Error al guardar el pago:", error);
+        }
+    };
+
+
+
 
     const toggleCollapse = (idx: number) => {
         setCollapsedStates((prevStates) => ({
@@ -191,16 +201,23 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                             <label className="form-label fw-bold">Pagado:</label>
                                             <div className="input-group">
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     className="form-control"
-                                                    value={p.paid}
-                                                    onChange={(e) => handlePaidChange(e, idx, p)}
+                                                    value={inputValues[idx] ?? p.paid.toFixed(2)}
+                                                    onChange={(e) => handlePaidChange(e, idx)}
                                                     onBlur={() => handlePaidBlur(p, idx)}
                                                     onFocus={(e) => {
-                                                        if (p.paid === 0) e.target.value = "";
+                                                        const value = paymentForUsers[idx].paid;
+                                                        const isWhole = value % 1 === 0;
+
+                                                        setInputValues((prev) => {
+                                                            const updated = [...prev];
+                                                            updated[idx] = isWhole ? value.toString() : value.toFixed(2);
+                                                            return updated;
+                                                        });
                                                     }}
-                                                    min={0}
-                                                    step={0.01}
+
+                                                    inputMode="decimal"
                                                 />
                                                 <span className="input-group-text">€</span>
                                             </div>
