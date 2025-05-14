@@ -165,21 +165,21 @@ export default function PaymentUsersList(props: PaymentsProps) {
             {HeaderPayments(props?.payment?.name || "Pago", props.setPage, Pages.LIST)}
             <div style={{ paddingTop: "95px", paddingBottom: "20px" }}>
                 <div className="row">
-                    {paymentForUsers.filter(p => p.amount > 0).map((p) => {
+                    {paymentForUsers.filter(p => p.amount > 0).map((p, idx) => {
                         const user = users.find((u) => u.id === p.idUser);
                         const userId = p.idUser!;
                         const isPaidEnough = p.paid >= p.amount;
                         const remainingAmount = (p.amount - p.paid).toFixed(2);
 
                         return (
-                            <div className="col-md-4 col-sm-6 col-12 mb-4" key={userId}>
-                                <div className="card h-100">
+                            <div className="col-md-4 col-sm-6 col-12 mb-2" key={userId}>
+                                <div className="card h-100" style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#e6e6e6' }}>
                                     <div className="card-body">
-                                        <h5 className="card-title d-flex justify-content-between">
+                                        <h5 className="card-title d-flex justify-content-between"
+                                            onClick={() => toggleCollapse(userId)}>
                                             <span>{user?.name || "Usuario desconocido"}</span>
                                             <button
                                                 className="btn p-0 border-0 bg-transparent"
-                                                onClick={() => toggleCollapse(userId)}
                                                 aria-expanded={!collapsedStates[userId]}
                                                 aria-controls={`collapseCard-${userId}`}
                                                 style={{ color: "#6c757d" }}
@@ -187,6 +187,10 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                                 {collapsedStates[userId] ? "▼" : "▲"}
                                             </button>
                                         </h5>
+
+                                        {collapsedStates[userId] && (
+                                            <hr className="hr mb-0 mt-0"></hr>
+                                        )}
 
                                         {!collapsedStates[userId] && (
                                             <p className="card-text mb-1">
