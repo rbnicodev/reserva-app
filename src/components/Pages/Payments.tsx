@@ -47,8 +47,6 @@ export default function Payments({ payUser, setPayUser }: Props) {
 
     return (
         <div>
-            {Header(Paths.INDEX, "Pagos")}
-            <div style={{ paddingTop: "95px", paddingBottom: "20px" }}>
                 {page === Pages.LIST ? (
                     <PaymentsList
                         setPayUser={setPayUser}
@@ -84,6 +82,5 @@ export default function Payments({ payUser, setPayUser }: Props) {
                     />
                 ) : null}
             </div>
-        </div>
     );
 }

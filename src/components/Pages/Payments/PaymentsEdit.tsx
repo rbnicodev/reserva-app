@@ -14,9 +14,10 @@ import {
     allShifts,
     savePaymentForUser,
 } from "../../../utils/firebaseUtils";
-import type { PaymentsProps } from "../Payments";
+import { Pages, type PaymentsProps } from "../Payments";
 import type { Menu } from "../../../models/Menu";
 import type { Price } from "../../../models/Price";
+import HeaderPayments from "./HeaderPayments";
 
 export default function PaymentUsersList(props: PaymentsProps) {
     const [loading, setLoading] = useState(true);
@@ -160,74 +161,77 @@ export default function PaymentUsersList(props: PaymentsProps) {
     }
 
     return (
-        <div className="container mt-4">
-            <div className="row">
-                {paymentForUsers.filter(p => p.amount > 0).map((p) => {
-                    const user = users.find((u) => u.id === p.idUser);
-                    const userId = p.idUser!;
-                    const isPaidEnough = p.paid >= p.amount;
-                    const remainingAmount = (p.amount - p.paid).toFixed(2);
+        <div>
+            {HeaderPayments(props?.payment?.name || "Pago", props.setPage, Pages.LIST)}
+            <div style={{ paddingTop: "95px", paddingBottom: "20px" }}>
+                <div className="row">
+                    {paymentForUsers.filter(p => p.amount > 0).map((p) => {
+                        const user = users.find((u) => u.id === p.idUser);
+                        const userId = p.idUser!;
+                        const isPaidEnough = p.paid >= p.amount;
+                        const remainingAmount = (p.amount - p.paid).toFixed(2);
 
-                    return (
-                        <div className="col-md-4 col-sm-6 col-12 mb-4" key={userId}>
-                            <div className="card h-100">
-                                <div className="card-body">
-                                    <h5 className="card-title d-flex justify-content-between">
-                                        <span>{user?.name || "Usuario desconocido"}</span>
-                                        <button
-                                            className="btn p-0 border-0 bg-transparent"
-                                            onClick={() => toggleCollapse(userId)}
-                                            aria-expanded={!collapsedStates[userId]}
-                                            aria-controls={`collapseCard-${userId}`}
-                                            style={{ color: "#6c757d" }}
-                                        >
-                                            {collapsedStates[userId] ? "▼" : "▲"}
-                                        </button>
-                                    </h5>
+                        return (
+                            <div className="col-md-4 col-sm-6 col-12 mb-4" key={userId}>
+                                <div className="card h-100">
+                                    <div className="card-body">
+                                        <h5 className="card-title d-flex justify-content-between">
+                                            <span>{user?.name || "Usuario desconocido"}</span>
+                                            <button
+                                                className="btn p-0 border-0 bg-transparent"
+                                                onClick={() => toggleCollapse(userId)}
+                                                aria-expanded={!collapsedStates[userId]}
+                                                aria-controls={`collapseCard-${userId}`}
+                                                style={{ color: "#6c757d" }}
+                                            >
+                                                {collapsedStates[userId] ? "▼" : "▲"}
+                                            </button>
+                                        </h5>
 
-                                    {!collapsedStates[userId] && (
-                                        <p className="card-text mb-1">
-                                            <strong>Monto:</strong> {p.amount.toFixed(2)}€
-                                        </p>
-                                    )}
+                                        {!collapsedStates[userId] && (
+                                            <p className="card-text mb-1">
+                                                <strong>Monto:</strong> {p.amount.toFixed(2)}€
+                                            </p>
+                                        )}
 
-                                    <div className={`collapse ${collapsedStates[userId] ? "" : "show"}`} id={`collapseCard-${userId}`}>
-                                        <div className="mb-2">
-                                            <label className="form-label fw-bold">Pagado:</label>
-                                            <div className="input-group">
-                                                <input
-                                                    type="text"
-                                                    className="form-control"
-                                                    value={inputValues[userId] ?? p.paid.toFixed(2)}
-                                                    onChange={(e) => handlePaidChange(e, userId)}
-                                                    onBlur={() => handlePaidBlur(p, userId)}
-                                                    onFocus={() => {
-                                                        const value = p.paid ?? 0;
-                                                        const isWhole = value % 1 === 0;
-                                                        setInputValues((prev) => ({
-                                                            ...prev,
-                                                            [userId]: isWhole ? value.toString() : value.toFixed(2),
-                                                        }));
-                                                    }}
-                                                    inputMode="decimal"
-                                                />
-                                                <span className="input-group-text">€</span>
+                                        <div className={`collapse ${collapsedStates[userId] ? "" : "show"}`} id={`collapseCard-${userId}`}>
+                                            <div className="mb-2">
+                                                <label className="form-label fw-bold">Pagado:</label>
+                                                <div className="input-group">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={inputValues[userId] ?? p.paid.toFixed(2)}
+                                                        onChange={(e) => handlePaidChange(e, userId)}
+                                                        onBlur={() => handlePaidBlur(p, userId)}
+                                                        onFocus={() => {
+                                                            const value = p.paid ?? 0;
+                                                            const isWhole = value % 1 === 0;
+                                                            setInputValues((prev) => ({
+                                                                ...prev,
+                                                                [userId]: isWhole ? value.toString() : value.toFixed(2),
+                                                            }));
+                                                        }}
+                                                        inputMode="decimal"
+                                                    />
+                                                    <span className="input-group-text">€</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <p className="card-text mt-2">
-                                        <strong>Estado:</strong>{" "}
-                                        <span className={isPaidEnough ? "text-success" : "text-danger"}>
-                                            {isPaidEnough ? "Pagado" : `- ${remainingAmount}€`}
-                                        </span>
-                                    </p>
+                                        <p className="card-text mt-2">
+                                            <strong>Estado:</strong>{" "}
+                                            <span className={isPaidEnough ? "text-success" : "text-danger"}>
+                                                {isPaidEnough ? "Pagado" : `- ${remainingAmount}€`}
+                                            </span>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
 
+                </div>
             </div>
         </div>
     );
