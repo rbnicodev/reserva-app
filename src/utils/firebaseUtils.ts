@@ -287,6 +287,17 @@ export const findPaymentsByUser = async (user: string): Promise<Payment[]> => {
   } as User));
  }
 
+ export const allPayUsers = async(): Promise<User[]> => {
+  const usersRef = collection(db, "payUsers");
+
+  const snapshot = await getDocs(usersRef);
+
+  return snapshot.docs.map( doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as User));
+ }
+
  export const saveAllPaymentsForUsers = async (items: PaymentForUser[]): Promise<void> => {
     const colRef = collection(db, "paymentsForUser");
 

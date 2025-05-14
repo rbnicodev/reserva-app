@@ -13,6 +13,7 @@ import {
     allPrices,
     allShifts,
     savePaymentForUser,
+    allPayUsers,
 } from "../../../utils/firebaseUtils";
 import { Pages, type PaymentsProps } from "../Payments";
 import type { Menu } from "../../../models/Menu";
@@ -25,19 +26,19 @@ export default function PaymentUsersList(props: PaymentsProps) {
     const [paymentForUsers, setPaymentForUsers] = useState<PaymentForUser[]>([]);
     const [inputValues, setInputValues] = useState<{ [userId: string]: string }>({});
     const [collapsedStates, setCollapsedStates] = useState<{ [userId: string]: boolean }>({});
-    const [tempValue, setTempValue] = useState<string|undefined>();
-    const [confirmeSave, setConfirmeSave] = useState<PaymentForUser|null>(null);
+    const [tempValue, setTempValue] = useState<string | undefined>();
+    const [confirmeSave, setConfirmeSave] = useState<PaymentForUser | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const [allUsersState, existingPayments, menus, prices, shiftsMap] =
                     await Promise.all([
-                        allUsers(),
+                        (props?.payment?.isMC ? allUsers() : allPayUsers()),
                         findPaymentsForUserByPayment(props.payment?.id!),
-                        allMenus(),
-                        allPrices(),
-                        allShifts(),
+                        (props?.payment?.isMC ? allMenus() : []),
+                        (props?.payment?.isMC ? allPrices() : []),
+                        (props?.payment?.isMC ? allShifts() : [])
                     ]);
 
                 setUsers(allUsersState);
@@ -67,6 +68,8 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                         acc + (price?.amount || 0) * (reservation?.guests ?? 0)
                                     );
                                 }, 0) ?? 0;
+                        } else {
+                            amount = props.payment?.amount ?? 0;
                         }
 
                         return new PaymentForUser({
@@ -125,34 +128,35 @@ export default function PaymentUsersList(props: PaymentsProps) {
                 parsed = parseFloat(tempValue);
                 setTempValue(undefined);
             }
-        } else 
+        } else
             setTempValue(parsed.toFixed(2));
 
         p.paid = parsed;
-
-        setPaymentForUsers((prev) =>
-            prev.map((item) => {
-                if (item.idUser === userId) {
-                    item.paid = parsed;
-                }
-                return item;
-            })
-        );
 
         setInputValues((prev) => ({
             ...prev,
             [userId]: parsed.toFixed(2),
         }));
 
-        if (toSave)setConfirmeSave(p);
+        if (toSave) setConfirmeSave(p);
     };
 
     const save = async (p: PaymentForUser) => {
+        setLoading(true);
         try {
             await savePaymentForUser(p);
             setConfirmeSave(null);
             setTempValue(undefined);
-        } catch(error) {
+            setTimeout(() => {setLoading(false)}, 300);
+            setPaymentForUsers((prev) =>
+                prev.map((item) => {
+                    if (item.idUser === p.idUser) {
+                        item.paid = p.paid;
+                    }
+                    return item;
+                })
+            );
+        } catch (error) {
             console.error("Error al guardar el pago:", error);
         }
     }
@@ -194,8 +198,12 @@ export default function PaymentUsersList(props: PaymentsProps) {
         <div>
             {HeaderPayments(props?.payment?.name || "Pago", props.setPage, Pages.LIST)}
             <div style={{ paddingTop: "95px", paddingBottom: "20px" }}>
+                {!props?.payment?.isMC ? <div>
+                    <div className="mt-0 mb-2 text-center text-secondary">{props?.payment?.amount}€/px</div>
+                    <hr className="hr mt-0 mb-4"></hr>
+                </div> : <></>}
                 <div className="row">
-                    {paymentForUsers.filter(p => p.amount > 0).map((p, idx) => {
+                    {paymentForUsers.filter(p => p.amount > 0).sort((a, b) => (b.isPaid() ? 0 : 1) - (a.isPaid() ? 0 : 1)).map((p, idx) => {
                         const user = users.find((u) => u.id === p.idUser);
                         const userId = p.idUser!;
                         const isPaidEnough = p.paid >= p.amount;
@@ -203,26 +211,31 @@ export default function PaymentUsersList(props: PaymentsProps) {
 
                         return (
                             <div className="col-md-4 col-sm-6 col-12 mb-2" key={userId}>
-                                <div className="card h-100" style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f1f1f1' }}>
+                                <div className="card h-100" style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : props?.payment?.isMC ? '#f1f1f1' : '#g0g0g0' }}>
                                     <div className="card-body">
-                                        <h5 className="card-title d-flex justify-content-between"
+                                        {props?.payment?.isMC ? (<h5 className="card-title d-flex justify-content-between"
                                             onClick={() => toggleCollapse(userId)}>
                                             <span>{user?.name || "Usuario desconocido"}</span>
-                                            <button
+                                            {(props?.payment?.isMC) ? (<button
                                                 className="btn p-0 border-0 bg-transparent"
                                                 aria-expanded={!collapsedStates[userId]}
                                                 aria-controls={`collapseCard-${userId}`}
                                                 style={{ color: "#6c757d" }}
                                             >
                                                 {collapsedStates[userId] ? "▼" : "▲"}
-                                            </button>
-                                        </h5>
+                                            </button>) : <></>}
+                                        </h5>) : (
+                                            <h5 className="card-title d-flex justify-content-between">
+                                                <span>{user?.name || "Usuario desconocido"}</span>
+                                                <div className={`${isPaidEnough ? "text-success" : "text-danger"} col text-end`}>{isPaidEnough ? "Pagado" : "Pendiente"}</div>
+                                            </h5>
+                                        )}
 
-                                        {collapsedStates[userId] && (
+                                        {collapsedStates[userId] && props?.payment?.isMC && (
                                             <hr className="hr mb-0 mt-0"></hr>
                                         )}
 
-                                        {!collapsedStates[userId] && (
+                                        {!collapsedStates[userId] && props?.payment?.isMC && (
                                             <p className="card-text mb-1">
                                                 <strong>Monto:</strong> {p.amount.toFixed(2)}€
                                             </p>
@@ -254,12 +267,18 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                             </div>
                                         </div>
 
-                                        <p className="card-text mt-2">
+                                        {props?.payment?.isMC ? (<p className="card-text mt-2">
                                             <strong>Estado:</strong>{" "}
                                             <span className={isPaidEnough ? "text-success" : "text-danger"}>
                                                 {isPaidEnough ? "Pagado" : `- ${remainingAmount}€`}
                                             </span>
-                                        </p>
+                                        </p>) : (
+                                            <div className="row">
+                                                <div className="w-auto text-center col"><button
+                                                    className={`btn w-50 mt-1 mb-1 ${isPaidEnough ? 'btn-secondary' : 'btn-success'}`}
+                                                    onClick={() => setConfirmeSave(new PaymentForUser({...p, paid: isPaidEnough ? 0: p.amount}))}>{isPaidEnough ? 'Borrar' : 'Marcar Pagado'}</button></div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -270,24 +289,26 @@ export default function PaymentUsersList(props: PaymentsProps) {
             </div>
 
             {confirmeSave && (
-                    <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)", marginTop: "66px" }}>
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Confirmar pago</h5>
-                                    <button type="button" className="btn-close" onClick={() => setConfirmeSave(null)}></button>
-                                </div>
-                                <div className="modal-body">
-                                    <p>¿Es correcto el pago que ha indicado de {tempValue}€?</p>
-                                </div>
-                                <div className="modal-footer">
-                                    <button className="btn btn-secondary" onClick={() => setConfirmeSave(null)}>Cancelar</button>
-                                    <button className="btn btn-primary" onClick={() => save(confirmeSave)}>Guardar</button>
-                                </div>
+                <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)", marginTop: "66px" }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Confirmar pago</h5>
+                                <button type="button" className="btn-close" onClick={() => setConfirmeSave(null)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>{props?.payment?.isMC ? `¿Es correcto el pago que ha indicado de ${tempValue}€?` :
+                                    confirmeSave.isPaid() ? `¿Confirmas que ${users.find(u => u.id === confirmeSave.idUser)?.name} ha pagado ${props?.payment?.name}?`
+                                        : `¿Deseas borrar el pago de ${users.find(u => u.id === confirmeSave.idUser)?.name}, de ${props?.payment?.name}`}</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={() => setConfirmeSave(null)}>Cancelar</button>
+                                <button className="btn btn-primary" onClick={() => save(confirmeSave)}>Guardar</button>
                             </div>
                         </div>
                     </div>
-                )}
+                </div>
+            )}
         </div>
     );
 }
