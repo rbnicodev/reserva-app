@@ -105,6 +105,9 @@ export default function PaymentUsersList(props: PaymentsProps) {
     ) => {
         let rawValue = e.target.value.replace(",", "."); // Convertir coma a punto
 
+        if (/^0\d+/.test(rawValue)) {
+            rawValue = String(parseFloat(rawValue));
+        }
         // Solo permitir formato numérico válido
         if (!/^(\d+)?([.]\d{0,2})?$/.test(rawValue) && rawValue !== "") return;
 
