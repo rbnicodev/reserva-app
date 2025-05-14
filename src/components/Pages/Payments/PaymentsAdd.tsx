@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
 import { Pages, type PaymentsProps } from "../Payments";
 import { db } from "../../../firebase";
 import type { Payment } from "../../../models/Payment";
@@ -6,17 +6,19 @@ import { useEffect, useState } from "react";
 
 export default function PaymentsAdd(props: PaymentsProps) {
     const [name, setName] = useState("");
-    const [isCouple, setIsCouple] = useState(false);
     const [deadLine, setDeadLine] = useState("");
+    const [amount, setAmount] = useState<number>(0);
     const [id, setId] = useState<string | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null | undefined>(null);
 
     const [availableUsers, setAvailableUsers] = useState<{ id: string; name: string }[]>([]);
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+
     const cancel = () => {
         props.setPayment(null);
         props.setPage(Pages.LIST);
-    }
+    };
+
     function toInputDateFormat(dateStr: string): string {
         const [day, month, year] = dateStr.split("-");
         if (year?.length === 4)
@@ -26,26 +28,37 @@ export default function PaymentsAdd(props: PaymentsProps) {
 
     const deletePayment = async () => {
         if (!confirmDeleteId) return;
-    
+
         try {
-          await deleteDoc(doc(db, "payments", confirmDeleteId));
-          props.setPayments(props.payments.filter((r) => r.id !== confirmDeleteId));
-          props.setPage(Pages.LIST);
+            await deleteDoc(doc(db, "payments", confirmDeleteId));
+            props.setPayments(props.payments.filter((r) => r.id !== confirmDeleteId));
+            props.setPage(Pages.LIST);
         } catch (error) {
-          console.error("Error eliminando el pago:", error);
+            console.error("Error eliminando el pago:", error);
         }
-    
+
         setConfirmDeleteId(null);
-      };
+    };
 
-
-      const savePayment = async () => {
+    const savePayment = async () => {
         if (!props.payUser?.name) return;
     
-        // Crear el objeto base (sin id)
+        if (!name.trim()) {
+            alert("El nombre del pago es obligatorio.");
+            return;
+        }
+        if (!deadLine) {
+            alert("La fecha límite es obligatoria.");
+            return;
+        }
+        if (!amount || isNaN(amount) || amount <= 0) {
+            alert("El monto debe ser mayor que 0.");
+            return;
+        }
+    
         const basePayment = {
             name,
-            isCouple,
+            amount,
             payUserCreator: props.payUser.name,
             payUsersAllowed: selectedUserIds,
             createDate: new Date().toISOString().split("T")[0],
@@ -56,7 +69,6 @@ export default function PaymentsAdd(props: PaymentsProps) {
             let savedPayment: Payment;
     
             if (props.payment?.id) {
-                // Modo edición
                 const paymentRef = doc(db, "payments", props.payment.id);
                 await updateDoc(paymentRef, basePayment);
                 savedPayment = { ...basePayment, id: props.payment.id };
@@ -65,7 +77,6 @@ export default function PaymentsAdd(props: PaymentsProps) {
                     props.payments.map(p => p.id === savedPayment.id ? savedPayment : p)
                 );
             } else {
-                // Modo creación
                 const docRef = await addDoc(collection(db, "payments"), basePayment);
                 savedPayment = { ...basePayment, id: docRef.id };
     
@@ -79,6 +90,7 @@ export default function PaymentsAdd(props: PaymentsProps) {
             console.error("Error al guardar el pago:", error);
         }
     };
+    
 
     useEffect(() => {
         const fetchAllowedUsers = async () => {
@@ -95,8 +107,7 @@ export default function PaymentsAdd(props: PaymentsProps) {
                 const usersSnap = await getDocs(collection(db, "payUsers"));
                 const users = usersSnap.docs
                     .filter(doc => allowedIds.includes(doc.id))
-                    .filter(doc => props.payUser?.name != doc.id
-                    )
+                    .filter(doc => props.payUser?.name != doc.id)
                     .map(doc => {
                         const data = doc.data();
                         return { id: doc.id, name: data.name };
@@ -114,12 +125,11 @@ export default function PaymentsAdd(props: PaymentsProps) {
         if (props.payment) {
             setId(props.payment.id ?? "");
             setName(props.payment.name ?? "");
-            setIsCouple(props.payment.isCouple ?? false);
             setDeadLine(props.payment.deadLine ?? "");
             setSelectedUserIds(props.payment.payUsersAllowed ?? []);
+            setAmount(props.payment.amount ?? 0);
         }
     }, [props.payment]);
-
 
     return (
         <div>
@@ -137,16 +147,23 @@ export default function PaymentsAdd(props: PaymentsProps) {
                     />
                 </div>
 
-                <div className="form-check mb-3">
-                    <input
-                        id="isCouple"
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={isCouple}
-                        onChange={e => setIsCouple(e.target.checked)}
-                    />
-                    <label className="form-check-label" htmlFor="isCouple">¿Es compartido en pareja?</label>
+                <div className="form-group mb-3">
+                    <label htmlFor="amount" className="form-label">Monto a pagar</label>
+                    <div className="input-group">
+                        <input
+                            id="amount"
+                            type="number"
+                            step="0.01"
+                            className="form-control"
+                            value={amount}
+                            onFocus={() => amount === 0 && setAmount(NaN)}
+                            onChange={e => setAmount(parseFloat(e.target.value))}
+                            placeholder="Ej. 120.50"
+                        />
+                        <span className="input-group-text">€</span>
+                    </div>
                 </div>
+
 
                 <div className="form-group mb-4">
                     <label htmlFor="deadline" className="form-label">Fecha límite</label>
@@ -157,7 +174,6 @@ export default function PaymentsAdd(props: PaymentsProps) {
                         value={toInputDateFormat(deadLine)}
                         onChange={e => setDeadLine(e.target.value)}
                     />
-
                 </div>
 
                 <div className="form-group mb-4">
@@ -186,30 +202,25 @@ export default function PaymentsAdd(props: PaymentsProps) {
                     <button className="btn btn-primary" onClick={savePayment}>Guardar</button>
                 </div>
 
-
                 {confirmDeleteId && (
-          <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)", marginTop: "66px" }}>
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Eliminar reserva</h5>
-                  <button type="button" className="btn-close" onClick={() => setConfirmDeleteId(null)}></button>
-                </div>
-                <div className="modal-body">
-                  <p>¿Seguro que quieres eliminar este pago? Los datos serán irrecuperables</p>
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={() => setConfirmDeleteId(null)}>
-                    Cancelar
-                  </button>
-                  <button className="btn btn-danger" onClick={deletePayment}>
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+                    <div className="modal d-block" style={{ background: "rgba(0, 0, 0, 0.5)", marginTop: "66px" }}>
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Eliminar pago</h5>
+                                    <button type="button" className="btn-close" onClick={() => setConfirmDeleteId(null)}></button>
+                                </div>
+                                <div className="modal-body">
+                                    <p>¿Seguro que quieres eliminar este pago? Los datos serán irrecuperables.</p>
+                                </div>
+                                <div className="modal-footer">
+                                    <button className="btn btn-secondary" onClick={() => setConfirmDeleteId(null)}>Cancelar</button>
+                                    <button className="btn btn-danger" onClick={deletePayment}>Eliminar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

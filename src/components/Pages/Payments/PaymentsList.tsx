@@ -20,7 +20,7 @@ export default function PaymentsList(props: PaymentsProps) {
             <hr className="hr"></hr>
             <div className="row mt-4 mb-4">
                 <button className="col btn btn-secondary mx-3" onClick={() => (props.setPayUser(null))}>Cerrar sesión</button>
-                <button className="col btn btn-primary mx-3" onClick={() => (props.setPage(Pages.ADD))}>Añadir pago</button>
+                {props?.payUser?.name === 'ruben_m' ? (<button className="col btn btn-primary mx-3" onClick={() => (props.setPage(Pages.ADD))}>Añadir pago</button>) : <></>}
             </div>
             <hr className="hr"></hr>
             {

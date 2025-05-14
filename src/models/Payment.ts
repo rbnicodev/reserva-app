@@ -1,11 +1,12 @@
 export interface Payment {
     id?: string;
     name?: string;
-    isCouple?: boolean;
+    amount?: number;
+    isMC?: boolean;
     payUserCreator?: string;
     payUsersAllowed?: string[];
-    createDate?: string; //Date
-    deadLine?: string //Date
+    createDate?: string; 
+    deadLine?: string; 
 }
 
 export type PaymentForUserProps = {

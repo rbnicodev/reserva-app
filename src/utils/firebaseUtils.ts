@@ -1,4 +1,4 @@
-import { collection, deleteField, doc, getDoc, getDocs, or, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, deleteField, doc, getDoc, getDocs, or, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { db } from "../firebase";
 import type { GlobalSettings } from "../models/GlobalSettings";
 import type { Shift } from "../models/Shift";
@@ -7,8 +7,8 @@ import type { Price } from "../models/Price";
 import type { Reservation } from "../models/Reservation";
 import type { BoardEntry } from "../models/BoardEntry";
 import { encrypt } from "./cryptoUtils";
-import type { PayUser } from "../models/User";
-import type { Payment } from "../models/Payment";
+import type { PayUser, User } from "../models/User";
+import type { Payment, PaymentForUser } from "../models/Payment";
 
 // Función para obtener las configuraciones globales desde Firestore
 export const fetchGlobalSettings = async (): Promise<GlobalSettings | null> => {
@@ -262,4 +262,72 @@ export const findPaymentsByUser = async (user: string): Promise<Payment[]> => {
     console.error("Error en findPaymentsByUser:", error);
     return [];
   }
+};
+
+ export const findPaymentsForUserByPayment = async (payment: string): Promise<PaymentForUser[]> => {
+  const paymentsForUserRef = collection(db, "paymentsForUser");
+  const queryRef = query(paymentsForUserRef, where("idPayment", "==", payment));
+
+  const snapshot = await getDocs(queryRef);
+
+  return snapshot.docs.map( doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as PaymentForUser));
+ }
+
+ export const allUsers = async(): Promise<User[]> => {
+  const usersRef = collection(db, "users");
+
+  const snapshot = await getDocs(usersRef);
+
+  return snapshot.docs.map( doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as User));
+ }
+
+ export const saveAllPaymentsForUsers = async (items: PaymentForUser[]): Promise<void> => {
+    const colRef = collection(db, "paymentsForUser");
+
+    const savePromises = items.map(async (item) => {
+        const dataToSave = {
+            idPayment: item.idPayment,
+            idUser: item.idUser,
+            amount: item.amount,
+            paid: item.paid
+        };
+
+        if (item.id) {
+            // Actualiza documento existente
+            const docRef = doc(db, "paymentsForUser", item.id);
+            await setDoc(docRef, dataToSave, { merge: true });
+        } else {
+            // Crea nuevo documento
+            const docRef = await addDoc(colRef, dataToSave);
+            item.id = docRef.id; // opcional: asignar el id al objeto original
+        }
+    });
+
+    await Promise.all(savePromises);
+};
+
+export const savePaymentForUser = async (item: PaymentForUser): Promise<void> => {
+    const dataToSave = {
+        idPayment: item.idPayment,
+        idUser: item.idUser,
+        amount: item.amount,
+        paid: item.paid
+    };
+
+    if (item.id) {
+        // Actualizar documento existente
+        const docRef = doc(db, "paymentsForUser", item.id);
+        await setDoc(docRef, dataToSave, { merge: true });
+    } else {
+        // Crear nuevo documento
+        const colRef = collection(db, "paymentsForUser");
+        const docRef = await addDoc(colRef, dataToSave);
+        item.id = docRef.id; // opcional: asignar ID generado
+    }
 };
