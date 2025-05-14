@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import UserSelection from "./Pages/UserSelection.jsx";
 import Reservations from "./Pages/Reservations.jsx";
 import ReservationForm from "./Pages/ReservationForm.jsx";
@@ -12,8 +12,13 @@ import ReservationsDay from "./Pages/ReservationsDay.jsx";
 import ReservationsDetail from "./Pages/ReservationsDetail.jsx";
 import Board from "./Pages/Board.tsx";
 import ProgramacionMoros from "./Pages/ProgramacionMoros.tsx";
+import PayUserAccess from "./Pages/PayUsersAcces.tsx";
+import Payments from "./Pages/Payments.tsx";
+import { useState } from "react";
 
 export default function Router() {
+
+  const [payUser, setPayUser] = useState(null);
   return (
     <BrowserRouter>
       <Layout>
@@ -29,6 +34,8 @@ export default function Router() {
           <Route path={Paths.TABLE_RESERVATIONS_DETAIL} element={<ReservationsDetail />} />
           <Route path={Paths.BULLETIN_BOARD} element={<Board />} />
           <Route path={Paths.PROGRAMACION_MOROS} element={<ProgramacionMoros />} />
+          <Route path={Paths.PAYMENTS_ACCESS} element={!!payUser ? (<Navigate to={Paths.PAYMENTS}/>): (<PayUserAccess setPayUser={setPayUser}/>)}/>
+          <Route path={Paths.PAYMENTS} element={!!payUser ? (<Payments payUser={payUser} setPayUser={setPayUser}/>): (<Navigate to={Paths.PAYMENTS_ACCESS}/>)}/>
         </Routes>
       </Layout>
     </BrowserRouter>
