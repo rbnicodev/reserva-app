@@ -254,7 +254,7 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                                 aria-controls={`collapseCard-${userId}`}
                                                 style={{ color: "#6c757d" }}
                                             >
-                                                {collapsedStates[userId] ? "▼" : "▲"}
+                                                {collapsedStates[userId] ? "➕" : "➖"}
                                             </button>) : <></>}
                                         </h5>) : (
                                             <h5 className="card-title d-flex justify-content-between">
@@ -309,7 +309,7 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                                     setOldValue(p.paid.toFixed(2));
                                                     setTempValue(value.toFixed(2));
                                                     setConfirmeSave(new PaymentForUser({ ...p, paid: isPaidEnough ? 0 : p.amount }));
-                                                }}>{isPaidEnough ? 'Borrar' : touched[userId] ? 'Guardar' : 'Marcar como Pagado'}</button></div>
+                                                }}>{isPaidEnough ? 'Borrar' : touched[userId] ? 'Guardar' : 'Marcar Pagado'}</button></div>
                                         </div>
 
                                         {props?.payment?.isMC ? (
