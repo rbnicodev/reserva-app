@@ -27,6 +27,7 @@ export default function PaymentUsersList(props: PaymentsProps) {
     const [inputValues, setInputValues] = useState<{ [userId: string]: string }>({});
     const [collapsedStates, setCollapsedStates] = useState<{ [userId: string]: boolean }>({});
     const [tempValue, setTempValue] = useState<string | undefined>();
+    const [oldValue, setOldValue] = useState<string | undefined>();
     const [confirmeSave, setConfirmeSave] = useState<PaymentForUser | null>(null);
 
     useEffect(() => {
@@ -115,6 +116,17 @@ export default function PaymentUsersList(props: PaymentsProps) {
         setInputValues((prev) => ({ ...prev, [userId]: rawValue }));
     };
 
+    const restoreValue = (userId: string) => {
+        if (!tempValue) return;
+        let parsed: number = parseFloat(tempValue);
+        setTempValue(undefined);
+
+        setInputValues((prev) => ({
+            ...prev,
+            [userId]: parsed.toFixed(2)
+        }))
+    }
+
     const handlePaidBlur = async (p: PaymentForUser, userId: string) => {
         const temporalValue = parseFloat(tempValue ?? "0");
 
@@ -124,21 +136,20 @@ export default function PaymentUsersList(props: PaymentsProps) {
         const toSave = parsed <= p.amount && temporalValue !== parseFloat(rawInput);
         if (parsed > p.amount) {
             alert("La cantidad pagada no puede ser superior al monto del pago");
-            if (!!tempValue) {
-                parsed = parseFloat(tempValue);
-                setTempValue(undefined);
-            }
-        } else
-            setTempValue(parsed.toFixed(2));
+            restoreValue(userId);
+            return;
+        }
 
-        p.paid = parsed;
-
-        setInputValues((prev) => ({
-            ...prev,
-            [userId]: parsed.toFixed(2),
-        }));
-
-        if (toSave) setConfirmeSave(p);
+        setTempValue(parsed.toFixed(2));
+        if (toSave) {
+            p.paid = parsed;
+            setConfirmeSave(p);
+        } else {
+            setInputValues((prev) => ({
+                ...prev,
+                [userId]: p.paid.toFixed(2)
+            }))
+        }
     };
 
     const save = async (p: PaymentForUser) => {
@@ -147,7 +158,7 @@ export default function PaymentUsersList(props: PaymentsProps) {
             await savePaymentForUser(p);
             setConfirmeSave(null);
             setTempValue(undefined);
-            setTimeout(() => {setLoading(false)}, 300);
+            setTimeout(() => { setLoading(false) }, 300);
             setPaymentForUsers((prev) =>
                 prev.map((item) => {
                     if (item.idUser === p.idUser) {
@@ -156,6 +167,12 @@ export default function PaymentUsersList(props: PaymentsProps) {
                     return item;
                 })
             );
+
+            const userId: string = p.idUser ?? '';
+            setInputValues((prev) => ({
+                ...prev,
+                [userId]: p.paid.toFixed(2),
+            }));
         } catch (error) {
             console.error("Error al guardar el pago:", error);
         }
@@ -231,10 +248,6 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                             </h5>
                                         )}
 
-                                        {collapsedStates[userId] && props?.payment?.isMC && (
-                                            <hr className="hr mb-0 mt-0"></hr>
-                                        )}
-
                                         {!collapsedStates[userId] && props?.payment?.isMC && (
                                             <p className="card-text mb-1">
                                                 <strong>Monto:</strong> {p.amount.toFixed(2)}€
@@ -242,22 +255,23 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                         )}
 
                                         <div className={`collapse ${collapsedStates[userId] ? "" : "show"}`} id={`collapseCard-${userId}`}>
-                                            <div className="mb-2">
+                                            <div className="mb-2 row">
                                                 <label className="form-label fw-bold">Pagado:</label>
                                                 <div className="input-group">
                                                     <input
                                                         type="text"
-                                                        className="form-control"
+                                                        className="form-control text-center"
                                                         value={inputValues[userId] ?? p.paid.toFixed(2)}
                                                         onChange={(e) => handlePaidChange(e, userId)}
                                                         onBlur={() => handlePaidBlur(p, userId)}
                                                         onFocus={(e) => {
+                                                            setOldValue(e.target.value);
                                                             setTempValue(e.target.value);
                                                             const value = p.paid ?? 0;
                                                             const isWhole = value % 1 === 0;
                                                             setInputValues((prev) => ({
                                                                 ...prev,
-                                                                [userId]: isWhole ? value.toString() === '0' ? '' :  value.toString() : value.toFixed(2),
+                                                                [userId]: isWhole ? value.toString() === '0' ? '' : value.toString() : value.toFixed(2),
                                                             }));
                                                         }}
                                                         inputMode="decimal"
@@ -265,18 +279,30 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                                     <span className="input-group-text">€</span>
                                                 </div>
                                             </div>
+                                            <div className="w-auto text-center row"><button
+                                                className={`btn w-50 mt-3 mb-4 m-auto ${isPaidEnough ? 'btn-danger' : 'btn-success'}`}
+                                                onClick={() => {
+                                                    const value = (p.amount - p.paid).toFixed(2);
+                                                    setOldValue(p.paid.toFixed(2));
+                                                    setTempValue(value);
+                                                    setConfirmeSave(new PaymentForUser({ ...p, paid: isPaidEnough ? 0 : p.amount }));
+                                                }}>{isPaidEnough ? 'Borrar' : 'Marcar Pagado'}</button></div>
                                         </div>
 
-                                        {props?.payment?.isMC ? (<p className="card-text mt-2">
-                                            <strong>Estado:</strong>{" "}
-                                            <span className={isPaidEnough ? "text-success" : "text-danger"}>
-                                                {isPaidEnough ? "Pagado" : `- ${remainingAmount}€`}
-                                            </span>
-                                        </p>) : (
+                                        {props?.payment?.isMC ? (
+                                            <>
+                                                <hr className="hr mb-0 mt-0"></hr>
+                                                <p className="card-text mt-2 text-end">
+                                                    <strong>Estado:</strong>{" "}
+                                                    <span className={isPaidEnough ? "text-success" : "text-danger"}>
+                                                        {isPaidEnough ? "Pagado" : `- ${remainingAmount}€`}
+                                                    </span>
+                                                </p>
+                                            </>) : (
                                             <div className="row">
                                                 <div className="w-auto text-center col"><button
-                                                    className={`btn w-50 mt-1 mb-1 ${isPaidEnough ? 'btn-secondary' : 'btn-success'}`}
-                                                    onClick={() => setConfirmeSave(new PaymentForUser({...p, paid: isPaidEnough ? 0: p.amount}))}>{isPaidEnough ? 'Borrar' : 'Marcar Pagado'}</button></div>
+                                                    className={`btn w-50 mt-1 mb-1 ${isPaidEnough ? 'btn-danger' : 'btn-success'}`}
+                                                    onClick={() => setConfirmeSave(new PaymentForUser({ ...p, paid: isPaidEnough ? 0 : p.amount }))}>{isPaidEnough ? 'Borrar' : 'Marcar Pagado'}</button></div>
                                             </div>
                                         )}
                                     </div>
@@ -297,12 +323,22 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                 <button type="button" className="btn-close" onClick={() => setConfirmeSave(null)}></button>
                             </div>
                             <div className="modal-body">
-                                <p>{props?.payment?.isMC ? `¿Es correcto el pago que ha indicado de ${tempValue}€?` :
+                                <p>{props?.payment?.isMC ? parseFloat(tempValue ?? '0') > 0 ? `¿Es correcto el pago que ha indicado de ${tempValue}€?` : "¿Quieres eliminar el pago?" :
                                     confirmeSave.isPaid() ? `¿Confirmas que ${users.find(u => u.id === confirmeSave.idUser)?.name} ha pagado ${props?.payment?.name}?`
                                         : `¿Deseas borrar el pago de ${users.find(u => u.id === confirmeSave.idUser)?.name}, de ${props?.payment?.name}`}</p>
                             </div>
                             <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={() => setConfirmeSave(null)}>Cancelar</button>
+                                <button className="btn btn-secondary" onClick={() => {
+                                    const userId = confirmeSave.idUser ?? '';
+                                    const temporalValue = oldValue ?? '0';
+                                    setInputValues((prev) => ({
+                                        ...prev,
+                                        [userId]: parseFloat(temporalValue).toFixed(2)
+                                    }));
+                                    setPaymentForUsers(paymentForUsers.map((prev) => new PaymentForUser({ ...prev, paid: prev.idUser === confirmeSave.idUser ? parseFloat(temporalValue) : prev.paid })));
+                                    setTempValue(temporalValue);
+                                    setConfirmeSave(null);
+                                }}>Cancelar</button>
                                 <button className="btn btn-primary" onClick={() => save(confirmeSave)}>Guardar</button>
                             </div>
                         </div>
