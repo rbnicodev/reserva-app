@@ -257,7 +257,7 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                                             const isWhole = value % 1 === 0;
                                                             setInputValues((prev) => ({
                                                                 ...prev,
-                                                                [userId]: isWhole ? value.toString() : value.toFixed(2),
+                                                                [userId]: isWhole ? value.toString() === '0' ? '' :  value.toString() : value.toFixed(2),
                                                             }));
                                                         }}
                                                         inputMode="decimal"
