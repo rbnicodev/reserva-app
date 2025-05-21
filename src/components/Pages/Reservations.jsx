@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { Paths } from "../../utils/paths";
-import { allPrices, allMenus, userReservations } from "../../utils/firebaseUtils";
+import { allPrices, allMenus, userReservations, fetchGlobalSettings } from "../../utils/firebaseUtils";
 import Header from "../Header";
 
 export default function Reservations() {
@@ -20,8 +20,13 @@ export default function Reservations() {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [menus, setMenus] = useState([]);
   const [prices, setPrices] = useState([]);
+  const [limitDelete, setLimitDelete] = useState(null);
   const countPlates = (elemento, array) => {
     return array.reduce((contador, actual) => actual === elemento ? contador + 1 : contador, 0);
+  }
+
+  const allowDelete = () => {
+    return !limitDelete || (new Date()).getTime() < limitDelete.getTime();
   }
 
   // Cargar reservas y turnos desde Firebase
@@ -45,6 +50,9 @@ export default function Reservations() {
       // Cargar menus
       const menusData = await allMenus();
       setMenus(menusData);
+
+      const constants = await fetchGlobalSettings();
+      setLimitDelete(constants.limit_delete);
 
 
       // Cargar reservas del usuario
@@ -75,7 +83,7 @@ export default function Reservations() {
     <div >
 
       {Header(Paths.INDEX, "Tus Reservas")}
-      <div style={{ width: "auto", paddingTop: "95px", paddingBottom: "20px" }}>
+      <div style={{ width: "auto", paddingTop: "95px", paddingBottom: "40px" }}>
         {reservations && reservations.length > 0 && (
           <p className="text-secondary">
             Total: {reservations.reduce((acc, reservation) => {
@@ -97,7 +105,10 @@ export default function Reservations() {
               {reservations.map((reservation) => (
                 <div className="card shadow-sm p-3">
                   <div className="d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
-                    <div className="cursor-pointer flex-grow-1" onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?reservationId=${reservation.id}&userId=${userId}`)}>
+                    <div className="cursor-pointer flex-grow-1" onClick={() => {
+                      if (allowDelete())
+                        navigate(`${Paths.TABLE_RESERVATION_FORM}?reservationId=${reservation.id}&userId=${userId}`);
+                    }}>
                       <h5 className="card-title text-dark">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
                       <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.kids !== 1 ? "s" : ""}</p>
                       <p className="card-text text-secondary">
@@ -106,7 +117,7 @@ export default function Reservations() {
                     </div>
 
                     {/* Botón de eliminar */}
-                    <button className="btn btn-sm" onClick={() => setConfirmDeleteId(reservation.id)}>
+                    <button className={`btn btn-sm ${allowDelete() ? '' : 'd-none'}`} onClick={() => setConfirmDeleteId(reservation.id)}>
                       🗑️
                     </button>
 
@@ -128,8 +139,8 @@ export default function Reservations() {
         </div>
 
         {/* Botón para agregar nueva reserva */}
-        <div className="mt-1 text-center">
-          <button className="btn btn-dark rounded-circle shadow" style={{ width: "60px", height: "60px", fontSize: "28px" }} onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?userId=${userId}`)}>
+        <div className={`mt-1 mb-4 text-center ${allowDelete() ? '' : 'd-none'}`}>
+          <button className="btn btn-dark rounded-circle shadow mb-4" style={{ width: "60px", height: "60px", fontSize: "28px" }} onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?userId=${userId}`)}>
             +
           </button>
         </div>
