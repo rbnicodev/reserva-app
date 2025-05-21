@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { db } from "../../firebase";
 import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where } from "firebase/firestore";
-import { allMenus, allShifts, restReservations } from "../../utils/firebaseUtils";
+import { allMenus, allShifts, fetchGlobalSettings, restReservations } from "../../utils/firebaseUtils";
 import { Paths } from "../../utils/paths";
 import Header from ".././Header";
 
@@ -23,6 +23,7 @@ export default function ReservationForm() {
   const [menus, setMenus] = useState([]);
   const [menu, setMenu] = useState({});
   const [mainPlatesSelection, setMainPlatesSelection] = useState([]);
+  const [limitDelete, setLimitDelete] = useState(null);
 
   const totalSelectedPlates = mainPlatesSelection.reduce((a, b) => a + b, 0);
 
@@ -36,6 +37,10 @@ export default function ReservationForm() {
       return newCounts;
     });
   };
+
+  const allowRest = () => {
+    return !limitDelete || limitDelete.getTime() > (new Date()).getTime();
+  }
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -102,6 +107,9 @@ export default function ReservationForm() {
       } catch (error) {
         console.error("Error al obtener los datos:", error);
       }
+
+      const limitDelete = (await fetchGlobalSettings()).limit_delete;
+      setLimitDelete(limitDelete);
     };
 
     fetchData();
@@ -132,6 +140,11 @@ export default function ReservationForm() {
     }
     if (!reservation.shiftId) {
       setErrorMessage("Debe indicarse un turno");
+      setErrorDialogOpen(true);
+      return;
+    }
+    if (!allowRest() && originalGuests > reservation.guests) {
+      setErrorMessage("¡Ya no es posible eliminar comensales!");
       setErrorDialogOpen(true);
       return;
     }
