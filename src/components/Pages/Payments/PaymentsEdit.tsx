@@ -247,7 +247,10 @@ export default function PaymentUsersList(props: PaymentsProps) {
                 {!props?.payment?.isMC ? <div>
                     <div className="mt-0 mb-2 text-center text-secondary">{props?.payment?.amount}€/px</div>
                     <hr className="hr mt-0 mb-4"></hr>
-                </div> : <></>}
+                </div> : <div>
+                    <div className="mt-0 mb-2 text-center text-secondary">Cobrado: {paymentForUsers.map(p => p.paid).reduce((acc, curr) => acc+=curr, 0).toFixed(2)}€ de {paymentForUsers.map(p => p.amount).reduce((acc, curr) => acc+=curr, 0).toFixed(2)}€</div>
+                    <hr className="hr mt-0 mb-4"></hr>
+                </div>}
                 <div className="row">
                     {paymentForUsers.filter(p => p.amount > 0).sort((a, b) => (b.isPaid() ? 0 : 1) - (a.isPaid() ? 0 : 1)).map((p, idx) => {
                         const user = users.find((u) => u.id === p.idUser);
