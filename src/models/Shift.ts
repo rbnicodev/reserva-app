@@ -3,4 +3,5 @@ export interface Shift {
     name?: string;
     order?: number;
     remainingSeats?: number;
+    limit_edit?: Date
 }

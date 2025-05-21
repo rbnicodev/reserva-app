@@ -106,7 +106,7 @@ export default function Reservations() {
                 <div className="card shadow-sm p-3">
                   <div className="d-flex flex-row align-items-center justify-content-between" key={reservation.id}>
                     <div className="cursor-pointer flex-grow-1" onClick={() => {
-                      if (allowDelete())
+                      if (!shifts[reservation.shiftId]?.limit_edit || (new Date()).getTime() < shifts[reservation.shiftId]?.limit_edit.toDate().getTime())
                         navigate(`${Paths.TABLE_RESERVATION_FORM}?reservationId=${reservation.id}&userId=${userId}`);
                     }}>
                       <h5 className="card-title text-dark">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
@@ -139,7 +139,7 @@ export default function Reservations() {
         </div>
 
         {/* Botón para agregar nueva reserva */}
-        <div className={`mt-1 mb-4 text-center ${allowDelete() ? '' : 'd-none'}`}>
+        <div className={`mt-1 mb-4 text-center`}>
           <button className="btn btn-dark rounded-circle shadow mb-4" style={{ width: "60px", height: "60px", fontSize: "28px" }} onClick={() => navigate(`${Paths.TABLE_RESERVATION_FORM}?userId=${userId}`)}>
             +
           </button>
