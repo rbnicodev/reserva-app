@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteField, doc, getDoc, getDocs, or, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, getDocs, or, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { db } from "../firebase";
 import type { GlobalSettings } from "../models/GlobalSettings";
 import type { Shift } from "../models/Shift";
@@ -323,7 +323,7 @@ export const findPaymentsByUser = async (user: string): Promise<Payment[]> => {
     await Promise.all(savePromises);
 };
 
-export const savePaymentForUser = async (item: PaymentForUser): Promise<void> => {
+export const savePaymentForUser = async (item: PaymentForUser): Promise<PaymentForUser> => {
     const dataToSave = {
         idPayment: item.idPayment,
         idUser: item.idUser,
@@ -341,4 +341,9 @@ export const savePaymentForUser = async (item: PaymentForUser): Promise<void> =>
         const docRef = await addDoc(colRef, dataToSave);
         item.id = docRef.id; // opcional: asignar ID generado
     }
+    return item;
 };
+
+export const deletePaymentForUser = async (id: string): Promise<void> => {
+  await deleteDoc(doc(db, "paymentsForUser", id));
+}

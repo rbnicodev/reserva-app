@@ -14,6 +14,7 @@ import {
     allShifts,
     savePaymentForUser,
     allPayUsers,
+    deletePaymentForUser,
 } from "../../../utils/firebaseUtils";
 import { Pages, type PaymentsProps } from "../Payments";
 import type { Menu } from "../../../models/Menu";
@@ -52,8 +53,6 @@ export default function PaymentUsersList(props: PaymentsProps) {
                             (p: PaymentForUser) => p.idUser === user.id
                         );
 
-                        if (existing) return new PaymentForUser(existing);
-
                         let amount = 0;
 
                         if (props.payment?.isMC) {
@@ -74,6 +73,13 @@ export default function PaymentUsersList(props: PaymentsProps) {
                         } else {
                             amount = props.payment?.amount ?? 0;
                         }
+
+                        if (existing) {
+                            if (props.payment?.isMC) existing.amount = amount;
+                            return new PaymentForUser(existing);
+                        }
+
+                        
 
                         return new PaymentForUser({
                             idUser: user.id,
@@ -170,14 +176,20 @@ export default function PaymentUsersList(props: PaymentsProps) {
     const save = async (p: PaymentForUser) => {
         setLoading(true);
         try {
-            await savePaymentForUser(p);
             setConfirmeSave(null);
+            if (p.paid > 0) {
+                p = await savePaymentForUser(p);
+            } else if (!!p.id) {
+                await deletePaymentForUser(p.id!);
+                p.id = undefined;
+            }
+
             setTempValue(undefined);
-            setTimeout(() => { setLoading(false) }, 300);
             setPaymentForUsers((prev) =>
                 prev.map((item) => {
                     if (item.idUser === p.idUser) {
                         item.paid = p.paid;
+                        item.id = p.id;
                     }
                     return item;
                 })
@@ -188,6 +200,8 @@ export default function PaymentUsersList(props: PaymentsProps) {
                 ...prev,
                 [userId]: p.paid.toFixed(2),
             }));
+            setTimeout(() => { setLoading(false) }, 300);
+
         } catch (error) {
             console.error("Error al guardar el pago:", error);
         }
