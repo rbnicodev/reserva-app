@@ -38,7 +38,7 @@ export default function Board() {
                     <div className="card shadow-sm p-3 d-flex flex-row align-items-center">
                         <div className={`flex-grow-1 `}>
                             <h5 className="card-title text-dark mb-2 text-center">Programación de Moros</h5>
-                            <h6 className="card-subtitle mb-2 text-muted text-center">2025</h6>
+                            <h6 className="card-subtitle mb-2 text-muted text-center">2026</h6>
                             <div className="mb-0 w-100">
                                 <img src="/docs/cartel.png" className="img-fluid" style={{ maxWidth: "500px;" }} alt="Imagen de /docs/" onClick={() => navigate(Paths.PROGRAMACION_MOROS)}/>
                             </div>
