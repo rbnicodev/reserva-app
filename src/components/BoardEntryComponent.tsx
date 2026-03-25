@@ -18,6 +18,7 @@ export default function BoardEntryComponent(entry: BoardEntry) {
                     {!!entry.footer && (
                         <p className="card-text text-secondary">{entry.footer}</p>
                     )}
+                    <p className="card-text text-secondary text-center fs-6 pt-3">{entry.order.toDate().toLocaleDateString()}</p>
                 </div>
                 {entry.urlImage && (
                     <div style={{ width: '20%' }}>
