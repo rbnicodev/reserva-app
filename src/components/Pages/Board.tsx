@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { allEntries } from "../../utils/firebaseUtils";
+import { allEntries, fetchGlobalSettings } from "../../utils/firebaseUtils";
 import BoardEntryComponent from "../BoardEntryComponent";
 import type { BoardEntry } from "../../models/BoardEntry";
 import Header from "../Header";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Board() {
     const [entries, setEntries] = useState<BoardEntry[]>([]);
+    const [activateTopBoard, setActivateTopBoard] = useState<boolean>(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -15,12 +16,22 @@ export default function Board() {
         const fetchEntries = async () => {
             try {
                 const data = await allEntries();
-                const dataOrdered = data.sort((e1, e2) => e2.order - e1.order);
+                const dataOrdered = [...data].sort((e1, e2) => {
+                    const t1 = e1.order.seconds;
+                    const t2 = e2.order.seconds;
+
+                    if (t1 > t2) return -1;
+                    if (t1 < t2) return 1;
+                    return 0;
+                    });
                 dataOrdered.length = dataOrdered.length < 5 ? dataOrdered.length : 5;
                 setEntries(dataOrdered);
             } catch (error) {
                 console.error("Error fetching board entries:", error);
             }
+            
+        const activate_top_board = (await fetchGlobalSettings())?.activate_top_board;    
+        setActivateTopBoard(activate_top_board || false); 
         };
 
         fetchEntries();
@@ -34,7 +45,8 @@ export default function Board() {
 
 
 
-                <div className="mb-4">
+                {activateTopBoard ? (
+                    <div className="mb-4">
                     <div className="card shadow-sm p-3 d-flex flex-row align-items-center">
                         <div className={`flex-grow-1 `}>
                             <h5 className="card-title text-dark mb-2 text-center">Programación de Moros</h5>
@@ -48,6 +60,7 @@ export default function Board() {
                         </div>
                     </div>
                 </div>
+                ): ``}
 
 
                 
@@ -55,9 +68,12 @@ export default function Board() {
                     <p>Cargando entradas...</p>
                 ) : (
                     entries.map((entry, index) => (
-                        <div key={index} className="mb-4">
-                            <BoardEntryComponent {...entry} />
-                        </div>
+                        entry.active ? 
+                            <div key={index} className="mb-4">
+                                <p>{entry.active}</p>
+                                <BoardEntryComponent {...entry} />
+                            </div>
+                            : ''
                     ))
                 )}
             </div>
