@@ -21,7 +21,8 @@ export const fetchGlobalSettings = async (): Promise<GlobalSettings | null> => {
       const result: GlobalSettings = {
         global_name: data.global_name ?? "",
         limit_delete: data.limit_delete?.toDate() ?? new Date(0),
-        max_reservations: data.max_reservations ?? 0,        
+        max_reservations: data.max_reservations ?? 0,
+        activate_top_board: data.activate_top_board  
       };
 
       return result;
@@ -117,6 +118,7 @@ export const allEntries = async (): Promise<BoardEntry[]> => {
       order: data.order || 0,
       footer: data.footer,
       imageUrl: data.imageUrl,
+      active: data.active || false,
     } as BoardEntry;
   });
 };
