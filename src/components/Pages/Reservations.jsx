@@ -89,7 +89,7 @@ export default function Reservations() {
             Total: {reservations.reduce((acc, reservation) => {
               const menu = menus.find(m => m.shiftId === reservation.shiftId);
               const price = prices.find(p => p.id === menu?.priceId);
-              return acc + (price?.amount || 0) * reservation.guests;
+              return acc + (price?.amount || 0) * reservation.menus ||0;
             }, 0)}
             €
           </p>
@@ -110,9 +110,12 @@ export default function Reservations() {
                         navigate(`${Paths.TABLE_RESERVATION_FORM}?reservationId=${reservation.id}&userId=${userId}`);
                     }}>
                       <h5 className="card-title text-dark">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
-                      <p className="card-text">👥 {reservation.guests} Adulto{reservation.guests > 1 ? "s" : ""} | 🧒 {reservation.kids} Niño{reservation.kids !== 1 ? "s" : ""}</p>
-                      <p className="card-text text-secondary">
-                        {prices.find(p => p.id === menus.find(m => m.shiftId === reservation.shiftId).priceId).amount * reservation.guests}€
+                      <p className="card-text">
+                          {`👥 ${reservation.guests || 0} `}
+                          {!!reservation.menus && `| 🍽️ ${reservation.menus || 0} `}
+                          {!!reservation.kids && `| 🧒 ${reservation.kids || 0}`}
+                      </p>                      <p className="card-text text-secondary">
+                        {prices.find(p => p.id === menus.find(m => m.shiftId === reservation.shiftId).priceId).amount * reservation.menus|0}€
                       </p>
                     </div>
 

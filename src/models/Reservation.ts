@@ -5,4 +5,5 @@ export interface Reservation {
     shiftId?: string;
     userId?: string;
     mainPlates?: string[];
+    menus?: number;
 }
