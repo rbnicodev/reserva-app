@@ -67,7 +67,7 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                         (p: Price) => p.id === menu?.priceId
                                     );
                                     return (
-                                        acc + (price?.amount || 0) * (reservation?.guests ?? 0)
+                                        acc + (price?.amount || 0) * (reservation?.menus ?? 0)
                                     );
                                 }, 0) ?? 0;
                         } else {

@@ -1,10 +1,21 @@
+import { useMemo } from "react"; // Añadimos useMemo
 import type { Payment } from "../../../models/Payment";
 import { Paths } from "../../../utils/paths";
 import Header from "../../Header";
 import { Pages, type PaymentsProps } from "../Payments";
-import HeaderPayments from "./HeaderPayments";
 
 export default function PaymentsList(props: PaymentsProps) {
+    // 1. Ejecutamos el Header lo primero para registrar sus Hooks correctamente
+    const headerComponent = Header(Paths.INDEX, "Tus pagos gestionados");
+
+    // 2. Ordenamos usando useMemo para no mutar las props y ganar rendimiento
+    const sortedPayments = useMemo(() => {
+        return [...props.payments].sort((a, b) => {
+            const intA = Number(a.deadLine?.replaceAll('-', '')) || 0;
+            const intB = Number(b.deadLine?.replaceAll('-', '')) || 0;
+            return intB - intA;
+        });
+    }, [props.payments]);
 
     const handleAdd = async (payment: Payment) => {
         props.setPayment(payment);
@@ -18,43 +29,44 @@ export default function PaymentsList(props: PaymentsProps) {
 
     return (
         <div>
-            {Header(Paths.INDEX, "Tus pagos gestionados")}
+            {headerComponent}
             <div style={{ paddingTop: "95px", paddingBottom: "20px" }}>
-                <hr className="hr"></hr>
+                <hr className="hr" />
                 <div className="row mt-4 mb-4">
-                    <button className="col btn btn-secondary mx-3" onClick={() => (props.setPayUser(null))}>Cerrar sesión</button>
-                    {props?.payUser?.name === 'ruben_m' ? (<button className="col btn btn-primary mx-3" onClick={() => {
-                        props.setPayment(null);
-                        props.setPage(Pages.ADD);
-                    }}>Añadir pago</button>) : <></>}
+                    <button className="col btn btn-secondary mx-3" onClick={() => props.setPayUser(null)}>
+                        Cerrar sesión
+                    </button>
+                    {props?.payUser?.name === 'ruben_m' && (
+                        <button className="col btn btn-primary mx-3" onClick={() => {
+                            props.setPayment(null);
+                            props.setPage(Pages.ADD);
+                        }}>
+                            Añadir pago
+                        </button>
+                    )}
                 </div>
-                <hr className="hr"></hr>
-                {
-                    <div className="mb-2 mt-4 h-75">
-                        {props.payments.map(payment => (
-                            <div className="card shadow-sm p-3 mb-4 d-flex flex-row align-items-center justify-content-between" key={payment.id}>
-                                <div className="cursor-pointer flex-grow-1" onClick={() => handleManage(payment)}>
-                                    <h5 className="card-title text-dark text-start">{payment.name}</h5>
-                                    <div className="card-text text-secondary">
-                                        <p>Fecha límite: {payment.deadLine}</p>
-                                    </div>
-
-
-                                </div>
-                                <div>
-                                    {
-                                        payment.payUserCreator == props.payUser?.name
-                                            ? (<button className="btn btn-sm" onClick={() => handleAdd(payment)}>
-                                                ✏️
-                                            </button>)
-                                            : <></>
-                                    }
+                <hr className="hr" />
+                
+                <div className="mb-2 mt-4 h-75">
+                    {sortedPayments.map(payment => (
+                        <div className="card shadow-sm p-3 mb-4 d-flex flex-row align-items-center justify-content-between" key={payment.id}>
+                            <div className="cursor-pointer flex-grow-1" onClick={() => handleManage(payment)}>
+                                <h5 className="card-title text-dark text-start">{payment.name}</h5>
+                                <div className="card-text text-secondary">
+                                    <p className="mb-0">Fecha límite: {payment.deadLine}</p>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                }
+                            <div>
+                                {payment.payUserCreator === props.payUser?.name && (
+                                    <button className="btn btn-sm" onClick={() => handleAdd(payment)}>
+                                        ✏️
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
-    )
+    );
 }
