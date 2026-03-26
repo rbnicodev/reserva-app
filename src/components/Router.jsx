@@ -15,6 +15,7 @@ import ProgramacionMoros from "./Pages/ProgramacionMoros.tsx";
 import PayUserAccess from "./Pages/PayUsersAcces.tsx";
 import Payments from "./Pages/Payments.tsx";
 import { useState } from "react";
+import MenuView from "./Pages/MenuView.tsx";
 
 export default function Router() {
 
@@ -36,6 +37,7 @@ export default function Router() {
           <Route path={Paths.PROGRAMACION_MOROS} element={<ProgramacionMoros />} />
           <Route path={Paths.PAYMENTS_ACCESS} element={!!payUser ? (<Navigate to={Paths.PAYMENTS}/>): (<PayUserAccess setPayUser={setPayUser}/>)}/>
           <Route path={Paths.PAYMENTS} element={!!payUser ? (<Payments payUser={payUser} setPayUser={setPayUser}/>): (<Navigate to={Paths.PAYMENTS_ACCESS}/>)}/>
+          <Route path={Paths.MENUS} element={<MenuView />} />
         </Routes>
       </Layout>
     </BrowserRouter>

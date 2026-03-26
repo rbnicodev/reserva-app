@@ -11,5 +11,6 @@ export enum Paths {
     BULLETIN_BOARD = `/bulletin_board`,
     PROGRAMACION_MOROS = `/pogramacion_moros`,
     PAYMENTS_ACCESS = `/payments-loggin`,
-    PAYMENTS = `/payments`
+    PAYMENTS = `/payments`,
+    MENUS = `/menus`
 }
