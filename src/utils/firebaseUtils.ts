@@ -22,7 +22,8 @@ export const fetchGlobalSettings = async (): Promise<GlobalSettings | null> => {
         global_name: data.global_name ?? "",
         limit_delete: data.limit_delete?.toDate() ?? new Date(0),
         max_reservations: data.max_reservations ?? 0,
-        activate_top_board: data.activate_top_board  
+        activate_top_board: data.activate_top_board  ,
+        mc_function_active: data.mc_function_active
       };
 
       return result;
