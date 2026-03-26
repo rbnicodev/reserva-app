@@ -243,7 +243,7 @@ export default function PaymentUsersList(props: PaymentsProps) {
     return (
         <div>
             {HeaderPayments(props?.payment?.name || "Pago", props.setPage, Pages.LIST)}
-            <div style={{ paddingTop: "95px", paddingBottom: "20px" }}>
+            <div style={{ paddingTop: "120px", paddingBottom: "20px" }}>
                 {!props?.payment?.isMC ? <div>
                     <div className="mt-0 mb-2 text-center text-secondary">{props?.payment?.amount}€/px</div>
                     <hr className="hr mt-0 mb-4"></hr>
