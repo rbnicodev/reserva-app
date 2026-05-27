@@ -88,8 +88,8 @@ export default function ReservationsSummary() {
                             if (!price || !price.amount) return total;
 
                             // 3. Sumar
-                            return total + (price.amount * item.menus||0);
-                        }, 0)||0}€
+                            return (total + (price.amount * item.menus||0));
+                        }, 0).toFixed(2)||(0).toFixed(2)}€
                         </p>
                     <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", paddingTop: "90px", paddingBottom: "20px" }}>
                         {summary.map(({ name, adults, kids, shiftId, mainPlates, menus }, index) => (
@@ -98,7 +98,7 @@ export default function ReservationsSummary() {
                                     <div className="cursor-pointer flex-grow-1" >
                                         <h5 className="card-title text-dark">{name}</h5>
                                         <p className="card-text">
-                                                    {`👥 ${adults || 0} `}
+                                                    {`🪑 ${adults || 0} `}
                                                     {!!menus && `| 🍽️ ${menus || 0} `}
                                                     {!!kids && `| 🧒 ${kids || 0}`}
                                                 </p>

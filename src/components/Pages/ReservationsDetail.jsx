@@ -69,8 +69,8 @@ export default function ReservationsDetail() {
                         Total: {reservations.reduce((acc, reservation) => {
                             const menu = menus.find(m => m.shiftId === shiftId);
                             const price = prices.find(p => p.id === menu?.priceId);
-                            return acc + (price?.amount || 0) * reservation.guests;
-                        }, 0)}
+                            return acc + (price?.amount || 0) * reservation.menus;
+                        }, 0).toFixed(2)}
                         €
                     </p>
                 )}
@@ -88,13 +88,28 @@ export default function ReservationsDetail() {
                                         <div className="cursor-pointer flex-grow-1">
                                             <h5 className="card-title text-dark">{users.find(u => u.id === reservation.userId)?.name || "Desconocido"}</h5>
                                             <p className="card-text">
-                                                {`👥 ${reservation.guests || 0} `}
+                                                {`🪑 ${reservation.guests || 0} `}
                                                 {!!reservation.menus && `| 🍽️ ${reservation.menus || 0} `}
                                                 {!!reservation.kids && `| 🧒 ${reservation.kids || 0}`}
                                             </p>
                                         </div>
                                         <p className="card-text text-secondary">
-                                            {prices.find(p => p.id === menus.find(m => m.shiftId === shiftId)?.priceId)?.amount * (reservation.menus||0)}€
+                                            {(() => {
+                                                    // 1. Buscamos el menú asociado al shiftId actual
+                                                    const menuAsociado = menus.find(m => m.shiftId === shiftId);
+                                                    
+                                                    // 2. Buscamos el precio usando el priceId del menú (con ? por si no encuentra el menú)
+                                                    const precioAsociado = menuAsociado ? prices.find(p => p.id === menuAsociado.priceId) : null;
+                                                    
+                                                    // 3. Obtenemos la cantidad de menús (si no existe, por defecto es 0)
+                                                    const cantidadMenus = reservation.menus || 0;
+                                                    
+                                                    // 4. Calculamos el total seguro
+                                                    const total = precioAsociado ? (precioAsociado.amount * cantidadMenus) : 0;
+
+                                                    // 5. Mostramos el resultado formateado con sus dos decimales
+                                                    return `${total.toFixed(2)}€`;
+                                                    })()}
                                         </p>
                                     </div>
 
