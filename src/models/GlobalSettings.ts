@@ -2,4 +2,6 @@ export interface GlobalSettings {
     global_name: string;
     limit_delete: Date;
     max_reservations: number;
+    activate_top_board: boolean;
+    mc_function_active: boolean;
   }

@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteField, doc, getDoc, getDocs, or, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, getDocs, or, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { db } from "../firebase";
 import type { GlobalSettings } from "../models/GlobalSettings";
 import type { Shift } from "../models/Shift";
@@ -22,6 +22,8 @@ export const fetchGlobalSettings = async (): Promise<GlobalSettings | null> => {
         global_name: data.global_name ?? "",
         limit_delete: data.limit_delete?.toDate() ?? new Date(0),
         max_reservations: data.max_reservations ?? 0,
+        activate_top_board: data.activate_top_board  ,
+        mc_function_active: data.mc_function_active
       };
 
       return result;
@@ -117,6 +119,7 @@ export const allEntries = async (): Promise<BoardEntry[]> => {
       order: data.order || 0,
       footer: data.footer,
       imageUrl: data.imageUrl,
+      active: data.active || false,
     } as BoardEntry;
   });
 };
@@ -323,7 +326,7 @@ export const findPaymentsByUser = async (user: string): Promise<Payment[]> => {
     await Promise.all(savePromises);
 };
 
-export const savePaymentForUser = async (item: PaymentForUser): Promise<void> => {
+export const savePaymentForUser = async (item: PaymentForUser): Promise<PaymentForUser> => {
     const dataToSave = {
         idPayment: item.idPayment,
         idUser: item.idUser,
@@ -341,4 +344,9 @@ export const savePaymentForUser = async (item: PaymentForUser): Promise<void> =>
         const docRef = await addDoc(colRef, dataToSave);
         item.id = docRef.id; // opcional: asignar ID generado
     }
+    return item;
 };
+
+export const deletePaymentForUser = async (id: string): Promise<void> => {
+  await deleteDoc(doc(db, "paymentsForUser", id));
+}

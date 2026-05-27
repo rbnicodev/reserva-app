@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { db } from "../../firebase";
 import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where } from "firebase/firestore";
-import { allMenus, allShifts, restReservations } from "../../utils/firebaseUtils";
+import { allMenus, allShifts, fetchGlobalSettings, restReservations } from "../../utils/firebaseUtils";
 import { Paths } from "../../utils/paths";
 import Header from ".././Header";
 
@@ -23,6 +23,7 @@ export default function ReservationForm() {
   const [menus, setMenus] = useState([]);
   const [menu, setMenu] = useState({});
   const [mainPlatesSelection, setMainPlatesSelection] = useState([]);
+  const [limitDelete, setLimitDelete] = useState(null);
 
   const totalSelectedPlates = mainPlatesSelection.reduce((a, b) => a + b, 0);
 
@@ -36,6 +37,10 @@ export default function ReservationForm() {
       return newCounts;
     });
   };
+
+  const allowRest = () => {
+    return !limitDelete || limitDelete.getTime() > (new Date()).getTime();
+  }
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -54,7 +59,7 @@ export default function ReservationForm() {
             reservationData = docSnap.data();
             setIsEdit(true);
             setReservation(reservationData);
-            setOriginalGuests(reservationData.guests || 0);
+            setOriginalGuests(reservationData.menus || 0);
 
             const menuForShift = tempMenus?.find(m => m.shiftId === reservationData.shiftId);
             if (menuForShift) setMenu(menuForShift);
@@ -62,6 +67,7 @@ export default function ReservationForm() {
         } else {
           reservationData = {
             guests: 1,
+            menus: 0,
             kids: 0,
             shiftId: "",
             userId: userId || "",
@@ -102,6 +108,9 @@ export default function ReservationForm() {
       } catch (error) {
         console.error("Error al obtener los datos:", error);
       }
+
+      const limitDelete = (await fetchGlobalSettings()).limit_delete;
+      setLimitDelete(limitDelete);
     };
 
     fetchData();
@@ -136,6 +145,24 @@ export default function ReservationForm() {
       return;
     }
 
+    if(reservation.menus > reservation.guests) {
+      setErrorMessage("El número de adultos no puede ser menor que el número de menús");
+      setErrorDialogOpen(true);
+      return;
+    }
+    
+    if (!allowRest() && originalGuests > reservation.menus) {
+      setErrorMessage("¡Ya no es posible eliminar menús!");
+      setErrorDialogOpen(true);
+      return;
+    }
+
+    if (reservation.guests+reservation.menus < 1) {
+      setErrorMessage("¡La reserva está vacía!");
+      setErrorDialogOpen(true);
+      return;
+    }
+
     const shifts = await allShifts();
     const selectedShift = shifts?.find((shift) => shift.id === reservation.shiftId);
     if (!selectedShift) {
@@ -146,11 +173,6 @@ export default function ReservationForm() {
     let remainingSeats = await restReservations(reservation.shiftId);
     if (isEdit) remainingSeats += (originalGuests || 0);
 
-    if (isNaN(reservation.guests) || reservation.guests < 1) {
-      setErrorMessage("Debe indicarse al menos una persona");
-      setErrorDialogOpen(true);
-      return;
-    }
     if (reservation.guests > remainingSeats) {
       setErrorMessage(`No hay suficientes plazas disponibles. Quedan ${remainingSeats}`);
       setErrorDialogOpen(true);
@@ -168,7 +190,7 @@ export default function ReservationForm() {
         });
         
         
-        if (reservation.mainPlates.length < reservation.guests) {
+        if (reservation.mainPlates.length < reservation.menus) {
           setErrorMessage("Deben indicarse los platos principales");
           setErrorDialogOpen(true);
           return;
@@ -194,7 +216,7 @@ export default function ReservationForm() {
       {Header(`${Paths.TABLE_RESERVATION}?userId=${userId}`, reservationId ? "Editar Reserva" : "Nueva Reserva")}
       {/* Botón de volver */}
 
-      <div style={{ paddingTop: "95px", paddingBottom: "20px", width: "90vw" }}>
+      <div style={{ paddingTop: "120px", paddingBottom: "20px", width: "90vw" }}>
         {!!reservation && reservation.userId ?
           <div className="w-100">
             <div className="mb-3">
@@ -213,7 +235,28 @@ export default function ReservationForm() {
                 }}
                 onBlur={(e) => {
                   const value = Number(e.target.value);
-                  setReservation({ ...reservation, guests: isNaN(value) || value < 1 ? 1 : value });
+                  setReservation({ ...reservation, guests: isNaN(value) || value < 0 ? 0 : value });
+                }}
+              />
+            </div>
+            
+            <div className="mb-3">
+              <label className="form-label"><strong>Menús de adulto</strong></label>
+              <input
+                type="number"
+                className="form-control"
+                value={reservation.menus === null ? "" : reservation.menus} // Permite temporalmente vacío
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || isNaN(value)) {
+                    setReservation({ ...reservation, menus: null }); // Permitir vacío temporalmente
+                  } else {
+                    setReservation({ ...reservation, menus: Number(value) });
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = Number(e.target.value);
+                  setReservation({ ...reservation, menus: isNaN(value) || value < 0 ? 0 : value });
                 }}
               />
             </div>
@@ -263,7 +306,7 @@ export default function ReservationForm() {
               <div className="card shadow-sm p-3 mt-0 mb-3">
                 <div className="card-title text-secondary">
                   <h5><strong>Selecciona los platos principales</strong></h5>
-                  <p className="text-secondary">Platos seleccionados: {totalSelectedPlates} / {reservation.guests}</p>
+                  <p className="text-secondary">Platos seleccionados: {totalSelectedPlates} / {reservation.menus}</p>
                 </div>
                 {menu.mainPlate.split("|").map((plate, index) => (
                   <div key={index} className="d-flex justify-content-between align-items-center mb-2">

@@ -14,6 +14,7 @@ import {
     allShifts,
     savePaymentForUser,
     allPayUsers,
+    deletePaymentForUser,
 } from "../../../utils/firebaseUtils";
 import { Pages, type PaymentsProps } from "../Payments";
 import type { Menu } from "../../../models/Menu";
@@ -52,8 +53,6 @@ export default function PaymentUsersList(props: PaymentsProps) {
                             (p: PaymentForUser) => p.idUser === user.id
                         );
 
-                        if (existing) return new PaymentForUser(existing);
-
                         let amount = 0;
 
                         if (props.payment?.isMC) {
@@ -68,12 +67,19 @@ export default function PaymentUsersList(props: PaymentsProps) {
                                         (p: Price) => p.id === menu?.priceId
                                     );
                                     return (
-                                        acc + (price?.amount || 0) * (reservation?.guests ?? 0)
+                                        acc + (price?.amount || 0) * (reservation?.menus ?? 0)
                                     );
                                 }, 0) ?? 0;
                         } else {
                             amount = props.payment?.amount ?? 0;
                         }
+
+                        if (existing) {
+                            if (props.payment?.isMC) existing.amount = amount;
+                            return new PaymentForUser(existing);
+                        }
+
+                        
 
                         return new PaymentForUser({
                             idUser: user.id,
@@ -170,14 +176,20 @@ export default function PaymentUsersList(props: PaymentsProps) {
     const save = async (p: PaymentForUser) => {
         setLoading(true);
         try {
-            await savePaymentForUser(p);
             setConfirmeSave(null);
+            if (p.paid > 0) {
+                p = await savePaymentForUser(p);
+            } else if (!!p.id) {
+                await deletePaymentForUser(p.id!);
+                p.id = undefined;
+            }
+
             setTempValue(undefined);
-            setTimeout(() => { setLoading(false) }, 300);
             setPaymentForUsers((prev) =>
                 prev.map((item) => {
                     if (item.idUser === p.idUser) {
                         item.paid = p.paid;
+                        item.id = p.id;
                     }
                     return item;
                 })
@@ -188,6 +200,8 @@ export default function PaymentUsersList(props: PaymentsProps) {
                 ...prev,
                 [userId]: p.paid.toFixed(2),
             }));
+            setTimeout(() => { setLoading(false) }, 300);
+
         } catch (error) {
             console.error("Error al guardar el pago:", error);
         }
@@ -229,11 +243,14 @@ export default function PaymentUsersList(props: PaymentsProps) {
     return (
         <div>
             {HeaderPayments(props?.payment?.name || "Pago", props.setPage, Pages.LIST)}
-            <div style={{ paddingTop: "95px", paddingBottom: "20px" }}>
+            <div style={{ paddingTop: "120px", paddingBottom: "20px" }}>
                 {!props?.payment?.isMC ? <div>
                     <div className="mt-0 mb-2 text-center text-secondary">{props?.payment?.amount}€/px</div>
                     <hr className="hr mt-0 mb-4"></hr>
-                </div> : <></>}
+                </div> : <div>
+                    <div className="mt-0 mb-2 text-center text-secondary">Cobrado: {paymentForUsers.map(p => p.paid).reduce((acc, curr) => acc+=curr, 0).toFixed(2)}€ de {paymentForUsers.map(p => p.amount).reduce((acc, curr) => acc+=curr, 0).toFixed(2)}€</div>
+                    <hr className="hr mt-0 mb-4"></hr>
+                </div>}
                 <div className="row">
                     {paymentForUsers.filter(p => p.amount > 0).sort((a, b) => (b.isPaid() ? 0 : 1) - (a.isPaid() ? 0 : 1)).map((p, idx) => {
                         const user = users.find((u) => u.id === p.idUser);

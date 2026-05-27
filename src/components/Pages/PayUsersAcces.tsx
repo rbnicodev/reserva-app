@@ -105,7 +105,7 @@ export default function PayUserAccess({setPayUser}: Props) {
     return (
         <div>
             {Header(Paths.INDEX, "Acceso a Pagos")}
-            <div style={{ paddingTop: "95px", paddingBottom: "20px" }}>
+            <div style={{ paddingTop: "120px", paddingBottom: "20px" }}>
                 <div className="card shadow-sm d-flex flex-column justify-content-between" style={{ minHeight: "30vh" }}>
                     {users.length === 0 ? (
                         <p className="text-secondary text-center mt-5">Cargando usuarios...</p>
