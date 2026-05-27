@@ -76,7 +76,7 @@ export default function MenuView() {
             {/* Invocamos el Header como función según tu código original */}
             {Header(backPath, "Carta de Menús")}
 
-            <div style={{ paddingTop: "95px", paddingBottom: "40px", width: "90vw" }}>
+            <div style={{ paddingTop: "120px", paddingBottom: "40px", width: "90vw" }}>
                 {loading ? (
                     <p className="text-secondary text-center" style={{ paddingTop: "70px" }}>
                         Cargando carta...

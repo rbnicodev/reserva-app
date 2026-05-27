@@ -41,7 +41,7 @@ export default function Board() {
 
         <div style={{ paddingBottom: "1em" }}>
             {Header(Paths.INDEX, "Tablón")}
-            <div style={{ paddingTop: "95px", width: "auto" }}>
+            <div style={{ paddingTop: "120px", width: "auto" }}>
 
 
 
