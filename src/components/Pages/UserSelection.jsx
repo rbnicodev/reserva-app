@@ -26,7 +26,7 @@ export default function UserSelection() {
   return (
     <div>
       {Header(null, "Reserva M&C")}
-      <div style={{ paddingTop: "95px", paddingBottom: "20px" }}>
+      <div style={{ paddingTop: "120px", paddingBottom: "20px" }}>
         {ListUsers(users, Paths.TABLE_RESERVATION)}
       </div>
     </div>

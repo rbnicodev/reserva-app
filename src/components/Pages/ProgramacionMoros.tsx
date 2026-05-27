@@ -16,7 +16,7 @@ export default function ProgramacionMoros() {
     return (
         <div>
             {Header(Paths.BULLETIN_BOARD, "Programación")}
-            <div style={{ paddingTop: "95px", width: "auto", paddingBottom: "1em" }}>
+            <div style={{ paddingTop: "120px", width: "auto", paddingBottom: "1em" }}>
                 {imagenes.map((src) => (
                     <div className="mb-4 text-center">
                         <img src={src} className="img-fluid" style={{ maxWidth: "500px;" }} alt="Imagen de /docs/" />

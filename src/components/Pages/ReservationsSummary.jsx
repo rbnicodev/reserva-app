@@ -74,10 +74,10 @@ export default function ReservationsSummary() {
         <div>
             {Header(Paths.INDEX, "Mesas M&C")}
             {summary.length === 0 ? (
-                <p style={{ paddingTop: "95px" }} className="text-secondary text-center">No hay reservas...</p>
+                <p style={{ paddingTop: "120px" }} className="text-secondary text-center">No hay reservas...</p>
             ) : (
                 <div>
-                    <p style={{ paddingTop: "95px", paddingBottom: "0px", marginBottom:"-4em"}} className="text-secondary">
+                    <p style={{ paddingTop: "120px", paddingBottom: "0px", marginBottom:"-4em"}} className="text-secondary">
                         Total: {summary.reduce((total, item) => {
                             // 1. Encontrar el menú por shiftId
                             const menu = menus.find(m => m.shiftId === item.shiftId);
@@ -91,7 +91,7 @@ export default function ReservationsSummary() {
                             return total + (price.amount * item.menus||0);
                         }, 0)||0}€
                         </p>
-                    <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", paddingTop: "95px", paddingBottom: "20px" }}>
+                    <div className="w-100 d-grid gap-3 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", paddingTop: "90px", paddingBottom: "20px" }}>
                         {summary.map(({ name, adults, kids, shiftId, mainPlates, menus }, index) => (
                             <div className="card shadow-sm p-3">
                                 <div className="d-flex flex-row align-items-center justify-content-between" key={index}>

@@ -83,7 +83,7 @@ export default function Reservations() {
     <div >
 
       {Header(Paths.INDEX, "Tus Reservas")}
-      <div style={{ width: "auto", paddingTop: "95px", paddingBottom: "40px" }}>
+      <div style={{ width: "auto", paddingTop: "120px", paddingBottom: "40px" }}>
         {reservations && reservations.length > 0 && (
           <p className="text-secondary">
             Total: {reservations.reduce((acc, reservation) => {
