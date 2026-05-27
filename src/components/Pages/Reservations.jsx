@@ -90,7 +90,7 @@ export default function Reservations() {
               const menu = menus.find(m => m.shiftId === reservation.shiftId);
               const price = prices.find(p => p.id === menu?.priceId);
               return acc + (price?.amount || 0) * reservation.menus ||0;
-            }, 0)}
+            }, 0).toFixed(2)}
             €
           </p>
         )}
@@ -111,11 +111,23 @@ export default function Reservations() {
                     }}>
                       <h5 className="card-title text-dark">{shifts[reservation.shiftId]?.name || "Turno desconocido"}</h5>
                       <p className="card-text">
-                          {`👥 ${reservation.guests || 0} `}
+                          {`🪑 ${reservation.guests || 0} `}
                           {!!reservation.menus && `| 🍽️ ${reservation.menus || 0} `}
                           {!!reservation.kids && `| 🧒 ${reservation.kids || 0}`}
                       </p>                      <p className="card-text text-secondary">
-                        {prices.find(p => p.id === menus.find(m => m.shiftId === reservation.shiftId).priceId).amount * reservation.menus|0}€
+                        {(() => {
+                            // 1. Buscamos el menú asociado al turno de la reserva
+                            const menuAsociado = menus.find(m => m.shiftId === reservation.shiftId);
+                            
+                            // 2. Buscamos el precio de ese menú
+                            const precioAsociado = menuAsociado ? prices.find(p => p.id === menuAsociado.priceId) : null;
+                            
+                            // 3. Si encontramos el precio, calculamos el total; si no, el total es 0
+                            const total = precioAsociado ? (precioAsociado.amount * reservation.menus) : 0;
+
+                            // 4. Pintamos el resultado siempre con dos decimales
+                            return `${total.toFixed(2)}€`;
+                          })()}
                       </p>
                     </div>
 
