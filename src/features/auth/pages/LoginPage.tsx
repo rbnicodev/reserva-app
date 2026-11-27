@@ -1,28 +1,33 @@
-import { useState } from "react";
-import { getOAuthLoginUrl } from "../api/authApi";
-import { saveOAuthState } from "../lib/authStorage";
-import type { OAuthProvider } from "../models/auth";
+import { type FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { loginWithPassword } from "../api/authApi";
+import { getDeviceId, saveSession } from "../lib/authStorage";
+import { Paths } from "../../../utils/paths";
 
-const PROVIDERS: { id: OAuthProvider; label: string; className: string }[] = [
-    { id: "google", label: "Continuar con Google", className: "btn-outline-dark" },
-    { id: "facebook", label: "Continuar con Facebook", className: "btn-primary" },
-    { id: "apple", label: "Continuar con Apple", className: "btn-dark" },
+const PROVIDERS: { id: string; label: string; className: string }[] = [
+    { id: "google", label: "Google", className: "btn-outline-dark" },
+    { id: "facebook", label: "Facebook", className: "btn-primary" },
+    { id: "apple", label: "Apple", className: "btn-dark" },
 ];
 
 export default function LoginPage() {
-    const [loadingProvider, setLoadingProvider] = useState<OAuthProvider | null>(null);
+    const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const handleLogin = async (provider: OAuthProvider) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
         setError("");
-        setLoadingProvider(provider);
+        setLoading(true);
         try {
-            const { login_url, state } = await getOAuthLoginUrl(provider);
-            saveOAuthState(provider, state);
-            window.location.assign(login_url);
+            const login = await loginWithPassword({ email, password, dispositivoId: getDeviceId() });
+            saveSession(login);
+            navigate(Paths.INDEX, { replace: true });
         } catch {
-            setError("No se pudo iniciar sesión. Inténtalo de nuevo.");
-            setLoadingProvider(null);
+            setError("Email o contraseña incorrectos, o cuenta bloqueada.");
+            setLoading(false);
         }
     };
 
@@ -33,16 +38,42 @@ export default function LoginPage() {
 
                 {error && <div className="alert alert-danger text-center">{error}</div>}
 
-                <div className="d-grid gap-3">
+                <form className="d-grid gap-3" onSubmit={handleSubmit}>
+                    <div>
+                        <label htmlFor="login-email" className="form-label">Email</label>
+                        <input
+                            id="login-email"
+                            type="email"
+                            className="form-control"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            autoComplete="username"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="login-password" className="form-label">Contraseña</label>
+                        <input
+                            id="login-password"
+                            type="password"
+                            className="form-control"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            autoComplete="current-password"
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                        {loading ? "Entrando..." : "Entrar"}
+                    </button>
+                </form>
+
+                <hr className="my-4" />
+
+                <div className="d-grid gap-2">
                     {PROVIDERS.map(({ id, label, className }) => (
-                        <button
-                            key={id}
-                            type="button"
-                            className={`btn ${className}`}
-                            disabled={loadingProvider !== null}
-                            onClick={() => handleLogin(id)}
-                        >
-                            {loadingProvider === id ? "Redirigiendo..." : label}
+                        <button key={id} type="button" className={`btn ${className}`} disabled>
+                            {label} (no disponible)
                         </button>
                     ))}
                 </div>
