@@ -1,6 +1,6 @@
 import { Paths } from "../../../utils/paths.js";
 import { API_URL, refreshAccessToken } from "../api/authApi";
-import type { Session } from "../models/auth";
+import type { MeResponse, Session } from "../models/auth";
 import { clearSession, getDeviceId, getSession, persistSession } from "./authStorage";
 
 /** Se refresca antes de caducar para que una petición en curso no reciba un token ya vencido. */
@@ -68,4 +68,11 @@ export async function authorizedFetch(path: string, init?: RequestInit): Promise
         throw new Error("Sesión caducada");
     }
     return send(refreshed.accessToken);
+}
+
+/** Usuario autenticado según el backend. Lanza error si el token no es válido para la API. */
+export async function fetchCurrentUser(): Promise<MeResponse> {
+    const response = await authorizedFetch("/api/auth/me");
+    if (!response.ok) throw new Error(`Error ${response.status} en /api/auth/me`);
+    return response.json() as Promise<MeResponse>;
 }
