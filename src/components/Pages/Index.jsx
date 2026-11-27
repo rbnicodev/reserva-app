@@ -9,6 +9,8 @@ export default function Index() {
     const navigate = useNavigate();
     const session = getSession();
     const puedeVerPagos = session?.esGod || session?.permisos?.includes("payments.listar");
+    const puedeConfigurar = session?.esGod || session?.permisos?.includes("admin.parametros");
+    const puedeGestionarUsuarios = session?.esGod || session?.permisos?.includes("admin.usuarios");
     // Los settings globales vendrán del backend; de momento no hay fuente de datos.
     const settings = null;
     const loading = false;
@@ -63,6 +65,18 @@ export default function Index() {
                         {puedeVerPagos && (
                             <button type="button" className="btn btn-light py-4 my-2 border shadow-sm" onClick={() => navigate(Paths.PAYMENTS_ACCESS)}>
                                 Pagos
+                            </button>
+                        )}
+
+                        {puedeConfigurar && (
+                            <button type="button" className="btn btn-light py-4 my-2 border shadow-sm" onClick={() => navigate(Paths.CONFIGURACIONES)}>
+                                Configuraciones
+                            </button>
+                        )}
+
+                        {puedeGestionarUsuarios && (
+                            <button type="button" className="btn btn-light py-4 my-2 border shadow-sm" onClick={() => navigate(Paths.USUARIOS)}>
+                                Usuarios
                             </button>
                         )}
                     </div>
