@@ -13,6 +13,8 @@ export enum Paths {
     PAYMENTS_ACCESS = `/payments-loggin`,
     PAYMENTS = `/payments`,
     MENUS = `/menus`,
+    CONFIGURACIONES = `/configuraciones`,
+    USUARIOS = `/usuarios`,
     LOGIN = `/login`,
     LOGIN_CALLBACK = `/login/callback/:provider`
 }

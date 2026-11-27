@@ -15,6 +15,8 @@ import Board from "./Pages/Board.tsx";
 import ProgramacionMoros from "./Pages/ProgramacionMoros.tsx";
 import PayUserAccess from "./Pages/PayUsersAcces.tsx";
 import MenuView from "./Pages/MenuView.tsx";
+import Configuraciones from "./Pages/Configuraciones.tsx";
+import Usuarios from "./Pages/Usuarios.tsx";
 import LoginPage from "../features/auth/pages/LoginPage.tsx";
 import OAuthCallbackPage from "../features/auth/pages/OAuthCallbackPage.tsx";
 import { getSession } from "../features/auth/lib/authStorage.ts";
@@ -38,6 +40,13 @@ function RequireAuth() {
 
   if (authorized === null) return null;
   return authorized ? <Outlet /> : <Navigate to={Paths.LOGIN} replace />;
+}
+
+/** Solo deja pasar si el usuario es god o tiene el permiso indicado; si no, vuelve al inicio. */
+function RequirePermission({ permiso }) {
+  const session = getSession();
+  const permitido = session?.esGod || session?.permisos?.includes(permiso);
+  return permitido ? <Outlet /> : <Navigate to={Paths.INDEX} replace />;
 }
 
 export default function Router() {
@@ -64,6 +73,12 @@ export default function Router() {
             <Route path={Paths.PAYMENTS_ACCESS} element={!!payUser ? (<Navigate to={Paths.PAYMENTS}/>): (<PayUserAccess setPayUser={setPayUser}/>)}/>
             <Route path={Paths.PAYMENTS} element={!!payUser ? (<Payments payUser={payUser} setPayUser={setPayUser}/>): (<Navigate to={Paths.PAYMENTS_ACCESS}/>)}/>
             <Route path={Paths.MENUS} element={<MenuView />} />
+            <Route element={<RequirePermission permiso="admin.parametros" />}>
+              <Route path={Paths.CONFIGURACIONES} element={<Configuraciones />} />
+            </Route>
+            <Route element={<RequirePermission permiso="admin.usuarios" />}>
+              <Route path={Paths.USUARIOS} element={<Usuarios />} />
+            </Route>
             <Route path="*" element={<Navigate to={Paths.INDEX} replace />} />
           </Route>
         </Routes>
