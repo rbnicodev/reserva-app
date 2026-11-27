@@ -30,6 +30,14 @@ export interface RefreshAccessTokenResponse {
     expires_in: number;
 }
 
+export interface MeResponse {
+    usuario_id: number;
+    email: string;
+    local_id: number | null;
+    es_god: boolean;
+    permisos: string[];
+}
+
 export interface Session {
     accessToken: string;
     /** Epoch en ms en el que caduca el access token. */
