@@ -1,0 +1,22 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import Router from "../components/Router.jsx";
+import { Paths } from "../utils/paths.ts";
+
+/** Genera una página HTML estática por cada ruta de la app (sin fallback de servidor). */
+export function getStaticPaths() {
+  const oauthProviders = ["google", "facebook", "apple"];
+  return Object.values(Paths)
+    .filter((path) => path !== Paths.INDEX)
+    .flatMap((path) =>
+      path.includes(":provider")
+        ? oauthProviders.map((provider) => path.replace(":provider", provider))
+        : [path]
+    )
+    .map((path) => ({ params: { route: path.slice(1) } }));
+}
+---
+
+<AppLayout>
+  <Router client:only="react" />
+</AppLayout>

@@ -1,9 +1,9 @@
 ---
 import AppLayout from "../layouts/AppLayout.astro";
+import Router from "../components/Router.jsx"; // Componente Router de React
 ---
 
 <AppLayout>
-  <main class="d-flex vh-100 align-items-center justify-content-center">
-    <h1 class="fs-4 text-secondary">En construcción</h1>
-  </main>
+  <!-- Aplicamos client:only a Router como componente de cliente -->
+  <Router client:only="react" />
 </AppLayout>
