@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { allMenus, allShifts, allPrices } from "../../utils/firebaseUtils"; 
 import { Paths } from "../../utils/paths";
 import Header from ".././Header";
-import type { Shift } from "../../models/Shift";
 import type { Menu } from "../../models/Menu";
-import type { Price } from "../../models/Price";
 
 
 // Interfaz para el estado combinado
@@ -20,53 +17,12 @@ export default function MenuView() {
     const searchParams = new URLSearchParams(location.search);
     const userId = searchParams.get("userId");
 
-    const [loading, setLoading] = useState<boolean>(true);
-    const [menuData, setMenuData] = useState<MenuCardData[]>([]);
+    // Pendiente de conectar con el backend (turnos, menús y precios).
+    const [loading] = useState<boolean>(false);
+    const [menuData] = useState<MenuCardData[]>([]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
-
-        const fetchData = async () => {
-            try {
-                // 1. Obtenemos los datos (permitiendo que sean null temporalmente)
-                const [rawShifts, rawMenus, rawPrices] = await Promise.all([
-                allShifts(),
-                allMenus(),
-                allPrices()
-                ]);
-
-                // 2. Validamos y convertimos a arrays vacíos si son null
-                const shifts: Shift[] = rawShifts ?? [];
-                const menus: Menu[] = rawMenus ?? [];
-                const prices: Price[] = rawPrices ?? [];
-
-                // 3. Mapeo de datos para la vista
-                const combined: MenuCardData[] = shifts
-                .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
-                .map(shift => {
-                    const menu = menus.find(m => m.shiftId === shift.id);
-                    const price = prices.find(p => p.id === menu?.priceId);
-                    
-                    // Solo devolvemos el objeto si existe un menú para este turno
-                    if (!menu) return null;
-
-                    return {
-                    shiftName: shift.name || "Sin nombre",
-                    menu: menu,
-                    price: price?.amount ?? "Consultar"
-                    };
-                })
-                .filter((item): item is MenuCardData => item !== null); // Filtro Type Guard para TS
-
-                setMenuData(combined);
-            } catch (error) {
-                console.error("Error al cargar la carta:", error);
-            } finally {
-                setLoading(false);
-            }
-            };
-
-        fetchData();
     }, []);
 
     const backPath = Paths.INDEX;

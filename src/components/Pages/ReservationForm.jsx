@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { db } from "../../firebase";
-import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where } from "firebase/firestore";
-import { allMenus, allShifts, fetchGlobalSettings, restReservations } from "../../utils/firebaseUtils";
+import { useLocation } from "react-router-dom";
 import { Paths } from "../../utils/paths";
 import Header from ".././Header";
 
 export default function ReservationForm() {
-  const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const userId = searchParams.get("userId");
@@ -18,12 +14,9 @@ export default function ReservationForm() {
   const [currentShiftName, setCurrentShiftName] = useState("");
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isEdit, setIsEdit] = useState(false);
-  const [originalGuests, setOriginalGuests] = useState(0);
   const [menus, setMenus] = useState([]);
   const [menu, setMenu] = useState({});
   const [mainPlatesSelection, setMainPlatesSelection] = useState([]);
-  const [limitDelete, setLimitDelete] = useState(null);
 
   const totalSelectedPlates = mainPlatesSelection.reduce((a, b) => a + b, 0);
 
@@ -38,83 +31,7 @@ export default function ReservationForm() {
     });
   };
 
-  const allowRest = () => {
-    return !limitDelete || limitDelete.getTime() > (new Date()).getTime();
-  }
-
   useEffect(() => { window.scrollTo(0, 0); }, []);
-
-  useEffect(() => {
-    if (!userId) return;
-
-    const fetchData = async () => {
-      try {
-        const tempMenus = await allMenus();
-        setMenus(tempMenus);
-
-        let reservationData = null;
-        if (reservationId) {
-          const docSnap = await getDoc(doc(db, "reservations", reservationId));
-          if (docSnap.exists()) {
-            reservationData = docSnap.data();
-            setIsEdit(true);
-            setReservation(reservationData);
-            setOriginalGuests(reservationData.menus || 0);
-
-            const menuForShift = tempMenus?.find(m => m.shiftId === reservationData.shiftId);
-            if (menuForShift) setMenu(menuForShift);
-          }
-        } else {
-          reservationData = {
-            guests: 1,
-            menus: 0,
-            kids: 0,
-            shiftId: "",
-            userId: userId || "",
-          };
-          setReservation(reservationData);
-        }
-
-        const reservationsQuery = query(collection(db, "reservations"), where("userId", "==", userId));
-        const reservationsSnapshot = await getDocs(reservationsQuery);
-        const reservedShifts = new Set(reservationsSnapshot.docs.map((doc) => doc.data().shiftId));
-
-        const shiftsSnapshot = await getDocs(collection(db, "shifts"));
-        const shifts = await Promise.all(
-          shiftsSnapshot.docs.map(async (doc) => {
-            const shiftId = doc.id;
-            let remainingSeats = (await restReservations(shiftId)) ?? 0;
-            if (reservationId && reservationData?.shiftId === shiftId) {
-              remainingSeats += reservationData.guests;
-            }
-            return {
-              id: shiftId,
-              name: doc.data().name,
-              order: doc.data().order ?? 9999,
-              remainingSeats,
-            };
-          })
-        );
-
-        setAvailableShifts(
-          shifts.filter((shift) => !reservedShifts.has(shift.id) || (reservationData?.shiftId === shift.id))
-            .sort((a, b) => a.order - b.order)
-        );
-
-        if (reservationId && reservationData) {
-          const shift = shifts.find((s) => s.id === reservationData.shiftId);
-          if (shift) setCurrentShiftName(shift.name);
-        }
-      } catch (error) {
-        console.error("Error al obtener los datos:", error);
-      }
-
-      const limitDelete = (await fetchGlobalSettings()).limit_delete;
-      setLimitDelete(limitDelete);
-    };
-
-    fetchData();
-  }, [userId, reservationId]);
 
   useEffect(() => {
     if (menu?.mainPlate && menu.mainPlate.includes("|")) {
@@ -134,80 +51,10 @@ export default function ReservationForm() {
     }
   }, [menu, reservation.mainPlates]);
 
-  const saveReservation = async () => {
-    if (!userId) {
-      console.error("Sin userId");
-      return;
-    }
-    if (!reservation.shiftId) {
-      setErrorMessage("Debe indicarse un turno");
-      setErrorDialogOpen(true);
-      return;
-    }
-
-    if(reservation.menus > reservation.guests) {
-      setErrorMessage("El número de adultos no puede ser menor que el número de menús");
-      setErrorDialogOpen(true);
-      return;
-    }
-    
-    if (!allowRest() && originalGuests > reservation.menus) {
-      setErrorMessage("¡Ya no es posible eliminar menús!");
-      setErrorDialogOpen(true);
-      return;
-    }
-
-    if (reservation.guests+reservation.menus < 1) {
-      setErrorMessage("¡La reserva está vacía!");
-      setErrorDialogOpen(true);
-      return;
-    }
-
-    const shifts = await allShifts();
-    const selectedShift = shifts?.find((shift) => shift.id === reservation.shiftId);
-    if (!selectedShift) {
-      console.error("Sin shift seleccionado");
-      return;
-    };
-
-    let remainingSeats = await restReservations(reservation.shiftId);
-    if (isEdit) remainingSeats += (originalGuests || 0);
-
-    if (reservation.guests > remainingSeats) {
-      setErrorMessage(`No hay suficientes plazas disponibles. Quedan ${remainingSeats}`);
-      setErrorDialogOpen(true);
-      return;
-    }
-
-    try {
-      if (mainPlatesSelection.length > 0 && menu.mainPlate.includes("|")) {
-        const options = menu.mainPlate.split("|").map(p => p.trim());
-        reservation.mainPlates = [];
-        mainPlatesSelection.forEach((count, idx) => {
-          for (let i = 0; i < count; i++) {
-            reservation.mainPlates.push(options[idx]);
-          }
-        });
-        
-        
-        if (reservation.mainPlates.length < reservation.menus) {
-          setErrorMessage("Deben indicarse los platos principales");
-          setErrorDialogOpen(true);
-          return;
-        }
-      }
-
-      if (reservationId) {
-        await setDoc(doc(db, "reservations", reservationId), reservation);
-      } else {
-        await addDoc(collection(db, "reservations"), reservation);
-      }
-      navigate(`${Paths.TABLE_RESERVATION}?userId=${userId}`);
-    } catch (error) {
-      console.error("Error al guardar la reserva:", error);
-      setErrorMessage("Hubo un error al guardar la reserva. Inténtalo de nuevo.");
-      setErrorDialogOpen(true);
-    }
+  const saveReservation = () => {
+    // Pendiente de backend: el guardado de reservas aún no está disponible.
+    setErrorMessage("Guardar reservas no está disponible todavía.");
+    setErrorDialogOpen(true);
   };
 
   return (

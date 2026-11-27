@@ -1,8 +1,5 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
 import { registerLocale } from "react-datepicker";
 import { useLocation, useNavigate } from "react-router-dom";
-import { db } from "../../firebase";
-import { allMenus, allPrices, allShifts } from "../../utils/firebaseUtils";
 import { Paths } from "../../utils/paths";
 import { useEffect, useState } from "react";
 import Header from "../Header";
@@ -15,50 +12,17 @@ export default function ReservationsDetail() {
     const searchParams = new URLSearchParams(location.search);
     const shiftId = searchParams.get("shiftId");
 
-    const [reservations, setReservations] = useState([]);
-    const [menus, setMenus] = useState([]);
-    const [prices, setPrices] = useState([]);
-    const [shift, setShift] = useState([]);
-    const [users, setUsers] = useState([]);
+    // Pendiente de conectar con el backend (reservas, turnos, menús, precios y usuarios).
+    const [reservations] = useState([]);
+    const [menus] = useState([]);
+    const [prices] = useState([]);
+    const [shift] = useState(null);
+    const [users] = useState([]);
 
     const countPlates = (elemento, array) => {
         return array.reduce((contador, actual) => actual === elemento ? contador + 1 : contador, 0);
     }
 
-    useEffect(() => {
-        if (!shiftId) return;
-
-        const fetchData = async () => {
-            const reservationsDocs = await getDocs(query(collection(db, "reservations"), where("shiftId", "==", shiftId)));
-            setReservations(reservationsDocs.docs.map((doc) => (
-                {
-                    id: doc.id,
-                    ...doc.data()
-                })));
-
-            // Cargar precios
-            const pricesData = await allPrices();
-            setPrices(pricesData);
-
-            // Cargar menus
-            const menusData = await allMenus();
-            setMenus(menusData);
-
-            // Cargar shift
-            const shiftsData = await allShifts();
-            setShift(shiftsData.find(s => s.id === shiftId));
-
-            // Cargar usuarios
-            const usersCollection = collection(db, "users");
-            const userDocs = await getDocs(usersCollection);
-            setUsers(userDocs.docs.map(doc => ({
-                id: doc.id,
-                name: doc.data().name ?? "Sin nombre"
-            })));
-        }
-
-        fetchData();
-    }, [shiftId]);
     return (
         <div >
 

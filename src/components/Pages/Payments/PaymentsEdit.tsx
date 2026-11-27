@@ -1,29 +1,17 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { User } from "../../../models/User";
 import {
     PaymentForUser,
     type Payment,
     type PaymentForUserProps,
 } from "../../../models/Payment";
-import {
-    allUsers,
-    findPaymentsForUserByPayment,
-    userReservations,
-    allMenus,
-    allPrices,
-    allShifts,
-    savePaymentForUser,
-    allPayUsers,
-    deletePaymentForUser,
-} from "../../../utils/firebaseUtils";
 import { Pages, type PaymentsProps } from "../Payments";
-import type { Menu } from "../../../models/Menu";
-import type { Price } from "../../../models/Price";
 import HeaderPayments from "./HeaderPayments";
 
 export default function PaymentUsersList(props: PaymentsProps) {
-    const [loading, setLoading] = useState(true);
-    const [users, setUsers] = useState<User[]>([]);
+    // Pendiente de backend: los datos de pagos por usuario llegarán desde la API.
+    const [loading, setLoading] = useState(false);
+    const [users] = useState<User[]>([]);
     const [paymentForUsers, setPaymentForUsers] = useState<PaymentForUser[]>([]);
     const [inputValues, setInputValues] = useState<{ [userId: string]: string }>({});
     const [collapsedStates, setCollapsedStates] = useState<{ [userId: string]: boolean }>({});
@@ -32,96 +20,6 @@ export default function PaymentUsersList(props: PaymentsProps) {
     const [confirmeSave, setConfirmeSave] = useState<PaymentForUser | null>(null);
     const [touched, setTouched] = useState<{ [userId: string]: boolean }>({});
     const [disabledButtons, setDisabled] = useState<boolean>(false);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [allUsersState, existingPayments, menus, prices, shiftsMap] =
-                    await Promise.all([
-                        (props?.payment?.isMC ? allUsers() : allPayUsers()),
-                        findPaymentsForUserByPayment(props.payment?.id!),
-                        (props?.payment?.isMC ? allMenus() : []),
-                        (props?.payment?.isMC ? allPrices() : []),
-                        (props?.payment?.isMC ? allShifts() : [])
-                    ]);
-
-                setUsers(allUsersState);
-
-                const calculatedPayments: PaymentForUser[] = await Promise.all(
-                    allUsersState.map(async (user: User) => {
-                        const existing = existingPayments.find(
-                            (p: PaymentForUser) => p.idUser === user.id
-                        );
-
-                        let amount = 0;
-
-                        if (props.payment?.isMC) {
-                            const reservations = await userReservations(user.id!);
-
-                            amount =
-                                reservations?.reduce((acc, reservation) => {
-                                    const menu = menus?.find(
-                                        (m: Menu) => m.shiftId === reservation.shiftId
-                                    );
-                                    const price = prices?.find(
-                                        (p: Price) => p.id === menu?.priceId
-                                    );
-                                    return (
-                                        acc + (price?.amount || 0) * (reservation?.menus ?? 0)
-                                    );
-                                }, 0) ?? 0;
-                        } else {
-                            amount = props.payment?.amount ?? 0;
-                        }
-
-                        if (existing) {
-                            if (props.payment?.isMC) existing.amount = amount;
-                            return new PaymentForUser(existing);
-                        }
-
-                        
-
-                        return new PaymentForUser({
-                            idUser: user.id,
-                            idPayment: props.payment?.id,
-                            amount,
-                            paid: 0,
-                        });
-                    })
-                );
-
-                setPaymentForUsers(calculatedPayments);
-                setInputValues(
-                    calculatedPayments.reduce((acc, p) => {
-                        acc[p.idUser!] = p.paid.toFixed(2);
-                        return acc;
-                    }, {} as { [userId: string]: string })
-                );
-
-                setCollapsedStates(
-                    calculatedPayments.reduce((acc, p) => {
-                        acc[p.idUser!] = true;
-                        return acc;
-                    }, {} as { [userId: string]: boolean })
-                );
-
-                setTouched(
-                    paymentForUsers.reduce((acc, p) => {
-                        acc[p.idUser!] = false;
-                        return acc;
-                    }, {} as { [userId: string]: boolean })
-                );
-            } catch (error) {
-                console.error("Error al cargar datos de pagos", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (props.payment?.id) {
-            fetchData();
-        }
-    }, [props.payment]);
 
     const handlePaidChange = (e: React.ChangeEvent<HTMLInputElement>, userId: string) => {
         let rawValue = e.target.value.replace(",", ".");
@@ -173,38 +71,10 @@ export default function PaymentUsersList(props: PaymentsProps) {
         setTimeout(() => { setDisabled(false) }, 300);
     };
 
-    const save = async (p: PaymentForUser) => {
-        setLoading(true);
-        try {
-            setConfirmeSave(null);
-            if (p.paid > 0) {
-                p = await savePaymentForUser(p);
-            } else if (!!p.id) {
-                await deletePaymentForUser(p.id!);
-                p.id = undefined;
-            }
-
-            setTempValue(undefined);
-            setPaymentForUsers((prev) =>
-                prev.map((item) => {
-                    if (item.idUser === p.idUser) {
-                        item.paid = p.paid;
-                        item.id = p.id;
-                    }
-                    return item;
-                })
-            );
-
-            const userId: string = p.idUser ?? '';
-            setInputValues((prev) => ({
-                ...prev,
-                [userId]: p.paid.toFixed(2),
-            }));
-            setTimeout(() => { setLoading(false) }, 300);
-
-        } catch (error) {
-            console.error("Error al guardar el pago:", error);
-        }
+    const save = (p: PaymentForUser) => {
+        // Pendiente de backend: guardar pagos por usuario aún no está disponible.
+        setConfirmeSave(null);
+        alert("Guardar pagos no está disponible todavía.");
     }
 
     const toggleCollapse = (userId: string) => {

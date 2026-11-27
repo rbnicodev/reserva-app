@@ -26,8 +26,6 @@ env.*
 # vscode setting folder
 .vscode/
 
-.firebase/
-src/firebase.ts
 
 /android/
 **/android/

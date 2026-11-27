@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { db } from "../../firebase";
-import { collection, doc, getDoc, getDocs, addDoc, query, where, deleteDoc } from "firebase/firestore";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es"; // Importa el idioma español
@@ -21,6 +19,7 @@ export default function ReservationsDay() {
   const searchParams = new URLSearchParams(location.search);
   const userId = searchParams.get("userId");
 
+  // Pendiente de conectar con el backend (reservas por día del usuario y de todos los usuarios).
   const [reservations, setReservations] = useState([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [createReservation, setCreateReservation] = useState(null);
@@ -29,83 +28,25 @@ export default function ReservationsDay() {
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [allreservations, setallreservations] = useState([]);
-  // Cargar reservas y turnos desde Firebase
+
   useEffect(() => {
     if (!userId) return;
-
-    
 
     const setMinDate = new Date();
     setMinDate.setDate(setMinDate.getDate() + 1);
     setMinimDate(setMinDate);
-
-    const fetchData = async () => {
-      // Cargar reservas del usuario
-      const reservationsCollection = collection(db, "reservationsDay");
-      const reservationsQuery = query(reservationsCollection, where("userId", "==", userId));
-      const reservationsDocs = await getDocs(reservationsQuery);
-
-      const allReservationsDocs = await getDocs(query(reservationsCollection));
-      setallreservations(allReservationsDocs.docs.map((doc) => new Date(doc.data().reservationDate)));
-
-      // Guardamos las reservas ordenadas por `reservationDate`
-      const sortedReservations = reservationsDocs.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .sort((a, b) => new Date(a.reservationDate).getTime() - new Date(b.reservationDate).getTime());
-
-
-      setReservations(sortedReservations);
-    };
-
-    fetchData();
   }, [userId]);
 
-  // Función para eliminar una reserva
+  // Función para eliminar una reserva.
+  // Pendiente de backend: de momento no se borra nada.
   const deleteReservation = async () => {
-    if (!confirmDeleteId) return;
-    setallreservations(allreservations.filter(ar => (format(ar, 'yyyy-MM-dd')) !== (reservations.find(r => r.id === confirmDeleteId).reservationDate)));
-
-    try {
-      await deleteDoc(doc(db, "reservationsDay", confirmDeleteId)); // Borra el documento correctamente
-      setReservations(
-        reservations
-          .filter((r) => r.id !== confirmDeleteId)
-          .sort((a, b) => new Date(a.reservationDate).getTime() - new Date(b.reservationDate).getTime())
-      );
-
-      setSelectedDate(null);
-    } catch (error) {
-      console.error("Error eliminando la reserva:", error);
-    }
-
     setConfirmDeleteId(null);
   };
 
 
+  // Pendiente de backend: de momento no se crea nada.
   const saveReservation = async (date) => {
     if (!date) return;
-    setallreservations([...allreservations, date]);
-    const formattedDate = format(date, "yyyy-MM-dd"); // Formatea la fecha en texto
-
-    try {
-      const docRef = await addDoc(collection(db, "reservationsDay"), {
-        userId,
-        reservationDate: formattedDate,
-      });
-
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setReservations([...reservations, { id: docSnap.id, ...docSnap.data() }]);
-      }
-      setSelectedDate(null);
-    } catch (error) {
-      console.error("Error creando la reserva:", error);
-    }
-
     setCreateReservation(null);
   };
 

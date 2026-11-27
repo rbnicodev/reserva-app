@@ -1,28 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { Paths } from "../../utils/paths";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Header from "../Header";
-import { fetchGlobalSettings } from "../../utils/firebaseUtils";
 
 export default function Index() {
     const navigate = useNavigate();
-    const [settings, setSettings] = useState(null);
-    const [loading, setLoading] = useState(true);
+    // Los settings globales vendrán del backend; de momento no hay fuente de datos.
+    const settings = null;
+    const loading = false;
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        const getSettings = async () => {
-            try {
-                const data = await fetchGlobalSettings();
-                setSettings(data);
-            } catch (error) {
-                console.error("Error recuperando settings:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        getSettings();
     }, []);
 
     // IMPORTANTE: El Header se ejecuta AQUÍ, fuera de cualquier IF,
