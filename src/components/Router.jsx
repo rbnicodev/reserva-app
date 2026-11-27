@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import UserSelection from "./Pages/UserSelection.jsx";
 import Reservations from "./Pages/Reservations.jsx";
 import ReservationForm from "./Pages/ReservationForm.jsx";
@@ -18,6 +18,12 @@ import { useState } from "react";
 import MenuView from "./Pages/MenuView.tsx";
 import LoginPage from "../features/auth/pages/LoginPage.tsx";
 import OAuthCallbackPage from "../features/auth/pages/OAuthCallbackPage.tsx";
+import { getSession } from "../features/auth/lib/authStorage.ts";
+
+/** Sin sesión (token) se redirige siempre a la pantalla de login. */
+function RequireAuth() {
+  return getSession()?.accessToken ? <Outlet /> : <Navigate to={Paths.LOGIN} replace />;
+}
 
 export default function Router() {
 
@@ -26,22 +32,25 @@ export default function Router() {
     <BrowserRouter>
       <Layout>
         <Routes>
-          <Route path={Paths.INDEX} element={<Index />} />
-          <Route path={Paths.TABLE_USER_SELECTION} element={<UserSelection />} />
-          <Route path={Paths.TABLE_RESERVATION} element={<Reservations />} />
-          <Route path={Paths.TABLE_RESERVATION_FORM} element={<ReservationForm />} />
-          <Route path={Paths.TABLE_RESERVATIONS_SUMMARY} element={<ReservationsSummary />} />
-          <Route path={Paths.DAY_USER_SELECTION} element={<UserSelectionDay />} />
-          <Route path={Paths.DAY_RESERVATION} element={<ReservationsDay />} />
-          <Route path={Paths.RESERVATION_CALENDAR} element={<ReservationCalendar />} />
-          <Route path={Paths.TABLE_RESERVATIONS_DETAIL} element={<ReservationsDetail />} />
-          <Route path={Paths.BULLETIN_BOARD} element={<Board />} />
-          <Route path={Paths.PROGRAMACION_MOROS} element={<ProgramacionMoros />} />
-          <Route path={Paths.PAYMENTS_ACCESS} element={!!payUser ? (<Navigate to={Paths.PAYMENTS}/>): (<PayUserAccess setPayUser={setPayUser}/>)}/>
-          <Route path={Paths.PAYMENTS} element={!!payUser ? (<Payments payUser={payUser} setPayUser={setPayUser}/>): (<Navigate to={Paths.PAYMENTS_ACCESS}/>)}/>
-          <Route path={Paths.MENUS} element={<MenuView />} />
           <Route path={Paths.LOGIN} element={<LoginPage />} />
           <Route path={Paths.LOGIN_CALLBACK} element={<OAuthCallbackPage />} />
+          <Route element={<RequireAuth />}>
+            <Route path={Paths.INDEX} element={<Index />} />
+            <Route path={Paths.TABLE_USER_SELECTION} element={<UserSelection />} />
+            <Route path={Paths.TABLE_RESERVATION} element={<Reservations />} />
+            <Route path={Paths.TABLE_RESERVATION_FORM} element={<ReservationForm />} />
+            <Route path={Paths.TABLE_RESERVATIONS_SUMMARY} element={<ReservationsSummary />} />
+            <Route path={Paths.DAY_USER_SELECTION} element={<UserSelectionDay />} />
+            <Route path={Paths.DAY_RESERVATION} element={<ReservationsDay />} />
+            <Route path={Paths.RESERVATION_CALENDAR} element={<ReservationCalendar />} />
+            <Route path={Paths.TABLE_RESERVATIONS_DETAIL} element={<ReservationsDetail />} />
+            <Route path={Paths.BULLETIN_BOARD} element={<Board />} />
+            <Route path={Paths.PROGRAMACION_MOROS} element={<ProgramacionMoros />} />
+            <Route path={Paths.PAYMENTS_ACCESS} element={!!payUser ? (<Navigate to={Paths.PAYMENTS}/>): (<PayUserAccess setPayUser={setPayUser}/>)}/>
+            <Route path={Paths.PAYMENTS} element={!!payUser ? (<Payments payUser={payUser} setPayUser={setPayUser}/>): (<Navigate to={Paths.PAYMENTS_ACCESS}/>)}/>
+            <Route path={Paths.MENUS} element={<MenuView />} />
+            <Route path="*" element={<Navigate to={Paths.INDEX} replace />} />
+          </Route>
         </Routes>
       </Layout>
     </BrowserRouter>
