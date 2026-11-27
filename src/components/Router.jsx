@@ -16,6 +16,8 @@ import PayUserAccess from "./Pages/PayUsersAcces.tsx";
 import Payments from "./Pages/Payments.tsx";
 import { useState } from "react";
 import MenuView from "./Pages/MenuView.tsx";
+import LoginPage from "../features/auth/pages/LoginPage.tsx";
+import OAuthCallbackPage from "../features/auth/pages/OAuthCallbackPage.tsx";
 
 export default function Router() {
 
@@ -38,6 +40,8 @@ export default function Router() {
           <Route path={Paths.PAYMENTS_ACCESS} element={!!payUser ? (<Navigate to={Paths.PAYMENTS}/>): (<PayUserAccess setPayUser={setPayUser}/>)}/>
           <Route path={Paths.PAYMENTS} element={!!payUser ? (<Payments payUser={payUser} setPayUser={setPayUser}/>): (<Navigate to={Paths.PAYMENTS_ACCESS}/>)}/>
           <Route path={Paths.MENUS} element={<MenuView />} />
+          <Route path={Paths.LOGIN} element={<LoginPage />} />
+          <Route path={Paths.LOGIN_CALLBACK} element={<OAuthCallbackPage />} />
         </Routes>
       </Layout>
     </BrowserRouter>

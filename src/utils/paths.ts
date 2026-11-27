@@ -12,5 +12,7 @@ export enum Paths {
     PROGRAMACION_MOROS = `/pogramacion_moros`,
     PAYMENTS_ACCESS = `/payments-loggin`,
     PAYMENTS = `/payments`,
-    MENUS = `/menus`
+    MENUS = `/menus`,
+    LOGIN = `/login`,
+    LOGIN_CALLBACK = `/login/callback/:provider`
 }
