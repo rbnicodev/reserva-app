@@ -8,14 +8,13 @@ import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 import { Paths } from '../../utils/paths';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query } from 'firebase/firestore';
-import { db } from '../../firebase';
 import Header from '../Header';
 
 export default function ReservationCalendar() {
     useEffect(() => { window.scrollTo(0, 0); }, []);
-    const [reservations, setReservations] = useState([]);
-    const [users, setUsers] = useState([]);
+    // Pendiente de conectar con el backend (reservas por día y usuarios).
+    const [reservations] = useState([]);
+    const [users] = useState([]);
     const [consultar, setConsultar] = useState(null);
 
     const isReserved = (date) => {
@@ -47,27 +46,8 @@ export default function ReservationCalendar() {
     }));
 
     useEffect(() => {
-        const fetchData = async () => {
-            const reservationsCollection = collection(db, "reservationsDay");
-            const reservationsQuery = query(reservationsCollection);
-            const reservationsDocs = await getDocs(reservationsQuery);
-
-            const sortedReservations = reservationsDocs.docs
-                .map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                }));
-            setReservations(sortedReservations);
-
-            const usersCollection = collection(db, "users");
-            const userDocs = await getDocs(usersCollection);
-            setUsers(userDocs.docs.map(doc => ({
-                id: doc.id,
-                name: doc.data().name ?? "Sin nombre"
-            })));
-        };
-        fetchData();
-    });
+        window.scrollTo(0, 0);
+    }, []);
 
     const renderCustomDay = (day, _selectedDates, pickersDayProps) => {
         if (day.outsideCurrentMonth) {

@@ -6,7 +6,6 @@ import PaymentsList from "./Payments/PaymentsList";
 import PaymentsAdd from "./Payments/PaymentsAdd";
 import PaymentsEdit from "./Payments/PaymentsEdit";
 import type { Payment } from "../../models/Payment";
-import { findPaymentsByUser } from "../../utils/firebaseUtils";
 
 export type PaymentsProps = {
     payUser: PayUser | null;
@@ -34,16 +33,6 @@ export default function Payments({ payUser, setPayUser }: Props) {
     const [page, setPage] = useState<Pages>(Pages.LIST);
     const [payments, setPayments] = useState<Payment[]>([]);
     const [payment, setPayment] = useState<Payment | null>(null);
-
-    useEffect(() => {
-        const loadPayments = async () => {
-            if (payUser?.name) {
-                const result = await findPaymentsByUser(payUser.name);
-                setPayments(result);
-            }
-        };
-        loadPayments();
-    }, [payUser]);
 
     useEffect(() => {
         window.scrollTo(0, 0);

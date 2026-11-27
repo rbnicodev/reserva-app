@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
-import { db } from "../../firebase";
 import { Paths } from "../../utils/paths";
-import { allPrices, allMenus, userReservations, fetchGlobalSettings } from "../../utils/firebaseUtils";
 import Header from "../Header";
 
 export default function Reservations() {
@@ -15,12 +12,13 @@ export default function Reservations() {
   const searchParams = new URLSearchParams(location.search);
   const userId = searchParams.get("userId");
 
-  const [reservations, setReservations] = useState([]);
-  const [shifts, setShifts] = useState({});
+  // Pendiente de conectar con el backend (reservas, turnos, menús, precios y ajustes).
+  const [reservations] = useState([]);
+  const [shifts] = useState({});
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-  const [menus, setMenus] = useState([]);
-  const [prices, setPrices] = useState([]);
-  const [limitDelete, setLimitDelete] = useState(null);
+  const [menus] = useState([]);
+  const [prices] = useState([]);
+  const [limitDelete] = useState(null);
   const countPlates = (elemento, array) => {
     return array.reduce((contador, actual) => actual === elemento ? contador + 1 : contador, 0);
   }
@@ -29,53 +27,9 @@ export default function Reservations() {
     return !limitDelete || (new Date()).getTime() < limitDelete.getTime();
   }
 
-  // Cargar reservas y turnos desde Firebase
-  useEffect(() => {
-    if (!userId) return;
-
-    const fetchData = async () => {
-      // Cargar turnos
-      const shiftsCollection = collection(db, "shifts");
-      const shiftsDocs = await getDocs(shiftsCollection);
-      const shiftsData = {};
-      shiftsDocs.forEach((doc) => {
-        shiftsData[doc.id] = { id: doc.id, ...doc.data() };
-      });
-      setShifts(shiftsData);
-
-      // Cargar precios
-      const pricesData = await allPrices();
-      setPrices(pricesData);
-
-      // Cargar menus
-      const menusData = await allMenus();
-      setMenus(menusData);
-
-      const constants = await fetchGlobalSettings();
-      setLimitDelete(constants.limit_delete);
-
-
-      // Cargar reservas del usuario
-      // Guardamos las reservas ordenadas por `shift.order`
-      const sortedReservations = (await userReservations(userId)).sort((a, b) => (shiftsData[a.shiftId]?.order ?? 0) - (shiftsData[b.shiftId]?.order ?? 0));
-
-      setReservations(sortedReservations);
-    };
-
-    fetchData();
-  }, [userId]);
-
-  // Función para eliminar una reserva
+  // Función para eliminar una reserva.
+  // Pendiente de backend: de momento no se borra nada.
   const deleteReservation = async () => {
-    if (!confirmDeleteId) return;
-
-    try {
-      await deleteDoc(doc(db, "reservations", confirmDeleteId));
-      setReservations(reservations.filter((r) => r.id !== confirmDeleteId));
-    } catch (error) {
-      console.error("Error eliminando la reserva:", error);
-    }
-
     setConfirmDeleteId(null);
   };
 

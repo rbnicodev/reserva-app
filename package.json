@@ -6,8 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "deploy": "astro build && firebase deploy"
+    "astro": "astro"
   },
   "dependencies": {
     "@astrojs/react": "^4.2.4",
@@ -25,7 +24,6 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "dayjs-plugin-utc": "^0.1.2",
-    "firebase": "^11.6.0",
     "react": "^19.0.0",
     "react-datepicker": "^8.1.0",
     "react-dom": "^19.0.0",

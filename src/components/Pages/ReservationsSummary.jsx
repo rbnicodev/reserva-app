@@ -1,74 +1,16 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 import { Paths } from "../../utils/paths";
-import { allMenus, allPrices, allShifts } from "../../utils/firebaseUtils";
 import Header from "../Header";
 
 export default function ReservationsSummary() {
     const navigate = useNavigate();
     useEffect(() => { window.scrollTo(0, 0); }, []);
-    const [summary, setSummary] = useState([]);
-    const [menus, setMenus] = useState([]);
-    const [prices, setPrices] = useState([]);
-    const [totalAmount, setTotalAmount] = useState([]);
+    // Pendiente de conectar con el backend (reservas, turnos, menús y precios).
+    const [summary] = useState([]);
+    const [menus] = useState([]);
+    const [prices] = useState([]);
 
-    useEffect(() => {
-        const fetchSummary = async () => {
-            // Obtener todas las reservas
-            const reservationsSnapshot = await getDocs(collection(db, "reservations"));
-            const reservations = reservationsSnapshot.docs.map(doc => doc.data());
-
-            // Obtener todos los turnos
-            const shiftsSnapshot = await getDocs(collection(db, "shifts"));
-            const shiftsData = {};
-            shiftsSnapshot.docs.forEach(doc => {
-                shiftsData[doc.id] = { id: doc.id, name: doc.data().name, order: doc.data().order ?? 999 };
-            });
-
-            // Cargar precios
-            const pricesData = await allPrices();
-            setPrices(pricesData);
-
-            // Cargar menus
-            const menusData = await allMenus();
-            setMenus(menusData);
-
-            // Procesar la información agrupando por turno
-            const shiftSummary = {};
-            for (const reservation of reservations) {
-                const { shiftId, guests, kids, userId, mainPlates, menus } = reservation;
-                if (!shiftSummary[shiftId]) {
-                    shiftSummary[shiftId] = {
-                        name: shiftsData[shiftId]?.name || "Turno desconocido",
-                        order: shiftsData[shiftId]?.order ?? 999,
-                        adults: 0,
-                        kids: 0,
-                        guests: 0,
-                        menus: 0,
-                        shiftId
-                    };
-                }
-                shiftSummary[shiftId].adults += (guests || 0);
-                shiftSummary[shiftId].kids += kids || 0;
-                shiftSummary[shiftId].guests += (guests || 0);
-                shiftSummary[shiftId].menus += (menus || 0);
-                if (!!reservation.mainPlates && reservation.mainPlates.length > 0)
-                    reservation.mainPlates.forEach(plate => {
-                        if (!shiftSummary[shiftId].mainPlates) shiftSummary[shiftId].mainPlates = {};
-                        if (!shiftSummary[shiftId].mainPlates[plate]) shiftSummary[shiftId].mainPlates[plate] = 0;
-                        shiftSummary[shiftId].mainPlates[plate] += 1
-                    });
-            }
-
-            // Convertir a array y ordenar por orden de turno
-            const sortedSummary = Object.values(shiftSummary).sort((a, b) => a.order - b.order);
-            setSummary(sortedSummary);
-        };
-
-        fetchSummary();
-    }, []);
 
     return (
         <div>

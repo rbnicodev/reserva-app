@@ -1,6 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
 import { Pages, type PaymentsProps } from "../Payments";
-import { db } from "../../../firebase";
 import type { Payment } from "../../../models/Payment";
 import { useEffect, useState } from "react";
 
@@ -26,21 +24,13 @@ export default function PaymentsAdd(props: PaymentsProps) {
         else return dateStr;
     }
 
-    const deletePayment = async () => {
-        if (!confirmDeleteId) return;
-
-        try {
-            await deleteDoc(doc(db, "payments", confirmDeleteId));
-            props.setPayments(props.payments.filter((r) => r.id !== confirmDeleteId));
-            props.setPage(Pages.LIST);
-        } catch (error) {
-            console.error("Error eliminando el pago:", error);
-        }
-
+    const deletePayment = () => {
+        // Pendiente de backend: borrar pagos aún no está disponible.
         setConfirmDeleteId(null);
+        alert("Eliminar pagos no está disponible todavía.");
     };
 
-    const savePayment = async () => {
+    const savePayment = () => {
         if (!props.payUser?.name) return;
     
         if (!name.trim()) {
@@ -55,72 +45,11 @@ export default function PaymentsAdd(props: PaymentsProps) {
             alert("El monto debe ser mayor que 0.");
             return;
         }
-    
-        const basePayment = {
-            name,
-            amount,
-            payUserCreator: props.payUser.name,
-            payUsersAllowed: selectedUserIds,
-            createDate: new Date().toISOString().split("T")[0],
-            deadLine
-        };
-    
-        try {
-            let savedPayment: Payment;
-    
-            if (props.payment?.id) {
-                const paymentRef = doc(db, "payments", props.payment.id);
-                await updateDoc(paymentRef, basePayment);
-                savedPayment = { ...basePayment, id: props.payment.id };
-    
-                props.setPayments(
-                    props.payments.map(p => p.id === savedPayment.id ? savedPayment : p)
-                );
-            } else {
-                const docRef = await addDoc(collection(db, "payments"), basePayment);
-                savedPayment = { ...basePayment, id: docRef.id };
-    
-                props.setPayments([...props.payments, savedPayment]);
-            }
-    
-            props.setPayment(null);
-            props.setPage(Pages.LIST);
-    
-        } catch (error) {
-            console.error("Error al guardar el pago:", error);
-        }
+
+        // Pendiente de backend: guardar pagos aún no está disponible.
+        alert("Guardar pagos no está disponible todavía.");
     };
     
-
-    useEffect(() => {
-        const fetchAllowedUsers = async () => {
-            if (!props.payUser?.name) return;
-
-            try {
-                const accessSnap = await getDocs(collection(db, "payAcces"));
-                const allowedIds: string[] = [];
-
-                accessSnap.forEach(accessDoc => {
-                    allowedIds.push(accessDoc.data().payUser);
-                });
-
-                const usersSnap = await getDocs(collection(db, "payUsers"));
-                const users = usersSnap.docs
-                    .filter(doc => allowedIds.includes(doc.id))
-                    .filter(doc => props.payUser?.name != doc.id)
-                    .map(doc => {
-                        const data = doc.data();
-                        return { id: doc.id, name: data.name };
-                    });
-                setAvailableUsers(users);
-            } catch (error) {
-                console.error("Error cargando usuarios permitidos:", error);
-            }
-        };
-
-        fetchAllowedUsers();
-    }, [props.payUser]);
-
     useEffect(() => {
         if (props.payment) {
             setId(props.payment.id ?? "");
