@@ -1,4 +1,4 @@
-import type { LoginResponse, OAuthLoginUrlResponse, OAuthProvider } from "../models/auth";
+import type { LoginResponse, OAuthLoginUrlResponse, OAuthProvider, PasswordLoginRequest } from "../models/auth";
 
 const API_URL = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8080";
 
@@ -13,6 +13,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
 
     return response.json() as Promise<T>;
+}
+
+export function loginWithPassword(body: PasswordLoginRequest): Promise<LoginResponse> {
+    return request<LoginResponse>("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+            email: body.email,
+            password: body.password,
+            dispositivo_id: body.dispositivoId,
+        }),
+    });
 }
 
 export function getOAuthLoginUrl(provider: OAuthProvider): Promise<OAuthLoginUrlResponse> {
