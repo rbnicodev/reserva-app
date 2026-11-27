@@ -18,7 +18,7 @@ import MenuView from "./Pages/MenuView.tsx";
 import LoginPage from "../features/auth/pages/LoginPage.tsx";
 import OAuthCallbackPage from "../features/auth/pages/OAuthCallbackPage.tsx";
 import { getSession } from "../features/auth/lib/authStorage.ts";
-import { fetchCurrentUser, ensureFreshSession } from "../features/auth/lib/session.ts";
+import { ensureValidatedSession } from "../features/auth/lib/session.ts";
 
 /** Sin sesión recuperable (ni token vigente ni refresh válido) o rechazada por la API se redirige a la pantalla de login. */
 function RequireAuth() {
@@ -27,8 +27,7 @@ function RequireAuth() {
 
   useEffect(() => {
     let active = true;
-    ensureFreshSession()
-      .then((session) => (session ? fetchCurrentUser().then(() => true, () => false) : false))
+    ensureValidatedSession()
       .then((ok) => {
         if (active) setAuthorized(ok);
       });

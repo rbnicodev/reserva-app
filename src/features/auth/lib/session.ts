@@ -76,3 +76,27 @@ export async function fetchCurrentUser(): Promise<MeResponse> {
     if (!response.ok) throw new Error(`Error ${response.status} en /api/auth/me`);
     return response.json() as Promise<MeResponse>;
 }
+
+/** Refresh token de la sesión ya validada contra la API. El refresh no rota, así que identifica la sesión. */
+let validatedRefreshToken: string | null = null;
+
+/**
+ * Valida la sesión contra /api/auth/me una sola vez por sesión. Las navegaciones posteriores
+ * solo comprueban que el token local siga vigente. Si cambia la sesión (logout o nuevo login), se vuelve a validar.
+ */
+export async function ensureValidatedSession(): Promise<boolean> {
+    const session = await ensureFreshSession();
+    if (!session) {
+        validatedRefreshToken = null;
+        return false;
+    }
+    if (validatedRefreshToken === session.refreshToken) return true;
+    try {
+        await fetchCurrentUser();
+        validatedRefreshToken = session.refreshToken;
+        return true;
+    } catch {
+        validatedRefreshToken = null;
+        return false;
+    }
+}
