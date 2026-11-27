@@ -24,8 +24,16 @@ export interface LoginResponse {
     permisos: string[];
 }
 
+export interface RefreshAccessTokenResponse {
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+}
+
 export interface Session {
     accessToken: string;
+    /** Epoch en ms en el que caduca el access token. */
+    expiresAt: number;
     refreshToken: string;
     usuarioId: number;
     nombre: string;

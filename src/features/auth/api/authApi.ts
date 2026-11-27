@@ -1,6 +1,12 @@
-import type { LoginResponse, OAuthLoginUrlResponse, OAuthProvider, PasswordLoginRequest } from "../models/auth";
+import type {
+    LoginResponse,
+    OAuthLoginUrlResponse,
+    OAuthProvider,
+    PasswordLoginRequest,
+    RefreshAccessTokenResponse,
+} from "../models/auth";
 
-const API_URL = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8080";
+export const API_URL = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8080";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const response = await fetch(`${API_URL}${path}`, {
@@ -23,6 +29,13 @@ export function loginWithPassword(body: PasswordLoginRequest): Promise<LoginResp
             password: body.password,
             dispositivo_id: body.dispositivoId,
         }),
+    });
+}
+
+export function refreshAccessToken(refreshToken: string, dispositivoId: string): Promise<RefreshAccessTokenResponse> {
+    return request<RefreshAccessTokenResponse>("/api/auth/refresh", {
+        method: "POST",
+        body: JSON.stringify({ refresh_token: refreshToken, dispositivo_id: dispositivoId }),
     });
 }
 
