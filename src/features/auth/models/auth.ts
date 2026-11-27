@@ -21,6 +21,7 @@ export interface LoginResponse {
     nombre: string;
     local_id: number | null;
     es_god: boolean;
+    permisos: string[];
 }
 
 export interface Session {
@@ -31,4 +32,5 @@ export interface Session {
     email: string;
     localId: number | null;
     esGod: boolean;
+    permisos: string[];
 }

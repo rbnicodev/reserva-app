@@ -3,9 +3,12 @@ import { Paths } from "../../utils/paths";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useEffect } from "react";
 import Header from "../Header";
+import { getSession } from "../../features/auth/lib/authStorage.ts";
 
 export default function Index() {
     const navigate = useNavigate();
+    const session = getSession();
+    const puedeVerPagos = session?.esGod || session?.permisos?.includes("payments.listar");
     // Los settings globales vendrán del backend; de momento no hay fuente de datos.
     const settings = null;
     const loading = false;
@@ -57,9 +60,11 @@ export default function Index() {
                             </>
                         )}
 
-                        <button type="button" className="btn btn-light py-4 my-2 border shadow-sm" onClick={() => navigate(Paths.PAYMENTS_ACCESS)}>
-                            Pagos
-                        </button>
+                        {puedeVerPagos && (
+                            <button type="button" className="btn btn-light py-4 my-2 border shadow-sm" onClick={() => navigate(Paths.PAYMENTS_ACCESS)}>
+                                Pagos
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

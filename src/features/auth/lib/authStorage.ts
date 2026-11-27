@@ -22,6 +22,7 @@ export function saveSession(login: LoginResponse): void {
         email: login.email,
         localId: login.local_id,
         esGod: login.es_god,
+        permisos: login.permisos ?? [],
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 }

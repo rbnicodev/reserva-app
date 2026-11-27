@@ -1,0 +1,12 @@
+---
+import AppLayout from "../../../layouts/AppLayout.astro";
+import Router from "../../../components/Router.jsx";
+
+export function getStaticPaths() {
+  return ["google", "facebook", "apple"].map((provider) => ({ params: { provider } }));
+}
+---
+
+<AppLayout>
+  <Router client:only="react" />
+</AppLayout>
