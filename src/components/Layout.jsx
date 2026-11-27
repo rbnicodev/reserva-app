@@ -17,7 +17,7 @@ export default function Layout({ children }) {
             >
                 <div className="container-fluid d-flex justify-content-center align-items-center w-100">
                     <img
-                        src="./aljawas-logo.svg"
+                        src="/aljawas-logo.svg"
                         alt="Logo Aljawas"
                         style={{ height: "50px" }}
                     />
