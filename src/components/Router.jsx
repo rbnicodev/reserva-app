@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import UserSelection from "./Pages/UserSelection.jsx";
 import Reservations from "./Pages/Reservations.jsx";
 import ReservationForm from "./Pages/ReservationForm.jsx";
@@ -13,16 +14,29 @@ import ReservationsDetail from "./Pages/ReservationsDetail.jsx";
 import Board from "./Pages/Board.tsx";
 import ProgramacionMoros from "./Pages/ProgramacionMoros.tsx";
 import PayUserAccess from "./Pages/PayUsersAcces.tsx";
-import Payments from "./Pages/Payments.tsx";
-import { useState } from "react";
 import MenuView from "./Pages/MenuView.tsx";
 import LoginPage from "../features/auth/pages/LoginPage.tsx";
 import OAuthCallbackPage from "../features/auth/pages/OAuthCallbackPage.tsx";
 import { getSession } from "../features/auth/lib/authStorage.ts";
+import { ensureFreshSession } from "../features/auth/lib/session.ts";
 
-/** Sin sesión (token) se redirige siempre a la pantalla de login. */
+/** Sin sesión recuperable (ni token vigente ni refresh válido) se redirige a la pantalla de login. */
 function RequireAuth() {
-  return getSession()?.accessToken ? <Outlet /> : <Navigate to={Paths.LOGIN} replace />;
+  const location = useLocation();
+  const [authorized, setAuthorized] = useState(() => (getSession() ? null : false));
+
+  useEffect(() => {
+    let active = true;
+    ensureFreshSession().then((session) => {
+      if (active) setAuthorized(!!session);
+    });
+    return () => {
+      active = false;
+    };
+  }, [location.pathname]);
+
+  if (authorized === null) return null;
+  return authorized ? <Outlet /> : <Navigate to={Paths.LOGIN} replace />;
 }
 
 export default function Router() {

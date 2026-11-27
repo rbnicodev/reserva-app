@@ -14,8 +14,9 @@ export function getDeviceId(): string {
 }
 
 export function saveSession(login: LoginResponse): void {
-    const session: Session = {
+    persistSession({
         accessToken: login.access_token,
+        expiresAt: Date.now() + login.expires_in * 1000,
         refreshToken: login.refresh_token,
         usuarioId: login.usuario_id,
         nombre: login.nombre,
@@ -23,7 +24,10 @@ export function saveSession(login: LoginResponse): void {
         localId: login.local_id,
         esGod: login.es_god,
         permisos: login.permisos ?? [],
-    };
+    });
+}
+
+export function persistSession(session: Session): void {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 }
 
