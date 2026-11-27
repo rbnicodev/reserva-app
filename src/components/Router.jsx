@@ -25,16 +25,11 @@ function RequireAuth() {
   return getSession()?.accessToken ? <Outlet /> : <Navigate to={Paths.LOGIN} replace />;
 }
 
-/** Primer segmento de la URL: hash del local (`/{hash}/...`). */
-function hashDesdeUrl() {
-  return window.location.pathname.split("/")[1] ?? "";
-}
-
 export default function Router() {
 
   const [payUser, setPayUser] = useState(null);
   return (
-    <BrowserRouter basename={`/${hashDesdeUrl()}`}>
+    <BrowserRouter>
       <Layout>
         <Routes>
           <Route path={Paths.LOGIN} element={<LoginPage />} />
